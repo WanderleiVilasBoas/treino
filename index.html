@@ -150,11 +150,13 @@ function loginView(msg){const pend=LS.g('ga_pend'),blob=LS.g('ga_blob'),user=fUS
  $('lf').onsubmit=async e=>{e.preventDefault();await tryLogin($('lu')?$('lu').value:'',$('lp').value,$('lk').checked)};
  ($('lu')&&!$('lu').value?$('lu'):$('lp')).focus();
  $('lcb').onclick=()=>{const c=findCode($('lc').value);if(!c){$('le2').textContent='Não encontrei um código válido. Copie a mensagem inteira do treinador.';return}LS.s('ga_pend',c);LS.d('ga_user');loginView('Código recebido. Digite a senha.')}}
+function prepView(user){LS.s('ga_user',user);$('nav').hidden=true;
+ $('app').innerHTML=`<div class="card" style="text-align:center;padding:26px 16px"><svg viewBox="0 0 24 24" width="46" height="46" aria-hidden="true" style="stroke:var(--ac);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round">${IC.treino}</svg><h1 style="margin:8px 0">Seu treino está sendo preparado</h1><p class="mu" style="margin:0 0 6px">Seu treinador ainda está montando o seu treino.</p><p class="mu" style="margin:0">Quando ficar pronto, entre aqui com o mesmo usuário e a senha que ele enviou.</p><div class="row m" style="justify-content:center"><button id="pt">Tentar de novo</button></div></div>`;$('pt').onclick=()=>loginView()}
 async function tryLogin(us,pw,keep){const b=$('lb'),e=$('le');b.disabled=true;e.textContent='';
  try{if(AUTH.n>0)await new Promise(r=>setTimeout(r,Math.min(4000,AUTH.n*800)));
   let r,str,user='';
   if(us){user=us.trim();let net=true;
-   try{const x=await viaFile(user,pw);r=x.r;str=x.str}catch(er){if(er&&(er.message==='nouser'||er.name==='OperationError'||er.message==='zip'))throw er;net=false}
+   try{const x=await viaFile(user,pw);r=x.r;str=x.str}catch(er){if(er&&(er.message==='nouser'||er.name==='OperationError'||er.message==='zip'))throw er;if(er&&er.message==='http'&&!LS.g('ga_blob')){prepView(user);return}net=false}
    if(!net){const cb=LS.g('ga_blob');if(!cb||normPw(fUS())!==normPw(user))throw new Error('net');r=await openBlob(cb,pw);str=cb}}
   else{str=LS.g('ga_pend')||LS.g('ga_blob');r=await openBlob(str,pw)}
   AUTH.n=0;await start(r.obj,str,keep?r.raw:null,user)}
@@ -330,6 +332,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-go],
  else if(a==='reinicia'){if(confirm('Reiniciar o plano? A semana 1 passa a contar a partir de hoje. Seu histórico é mantido.')){S.ini=tdy();S.sem=null;S.act=null;save();go('treino');toast('Plano reiniciado')}}
  else if(a==='tema'){S.tema=S.tema==='dark'?'light':S.tema==='light'?null:'dark';if(S.tema)document.documentElement.dataset.theme=S.tema;else delete document.documentElement.dataset.theme;save();draw()}
  else if(a==='pv'){PV=b.dataset.v;SEL=null;draw()}
+
  else if(a==='atualizar'){toast('Verificando...');await refresh(true)}
  else if(a==='sair')logout()});
 document.addEventListener('input',e=>{const t=e.target;if(!P||!S||!S.act||t.dataset.f===undefined)return;setCg(+t.dataset.i,+t.dataset.k,+t.dataset.f,t.value)});
