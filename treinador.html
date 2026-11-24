@@ -973,6 +973,18 @@ function calTab(n){const s=ld()[n]||{},hj=new Date();hj.setHours(0,0,0,0);if(!CM
 <p style="margin:0 0 8px"><b>${tr}</b> ${tr===1?'dia treinado':'dias treinados'} em ${MESES[m].toLowerCase()}${fa?` · ${fa} ${fa===1?'falta':'faltas'} no previsto`:''}</p>
 <small class="mu" style="display:block;margin-bottom:8px">Dia preenchido: treinou. Dia com contorno: era previsto e não houve treino registrado. Toque num dia para ver detalhes ou marcar presença à mão.</small>${det}<div class="row"><button class="btn s" data-f="cy" type="button">Ver ano completo</button></div>`}
 function calMan(n,d){const q=rd('gt_freq');q[n]=q[n]||[];const id='adm|'+d,e=q[n].find(x=>x.id===id);if(e){if(e.x)delete e.x;else e.x=1;e.u=Date.now()}else q[n].push({id,d,mi:0,w:0,di:0,dur:0,man:1,u:Date.now()});ST.setItem('gt_freq',JSON.stringify(q))}
+function libInfo(n){const pl=rd(PLK)[n],al=ld()[n]||{};if(!pl)return null;const pp=pl.p||{},N=Math.max(1,Math.min(+pp.sem||12,(pl.mesos||[]).length*4||12));
+ let au=1;if(pp.ini){const hj=new Date();hj.setHours(0,0,0,0);au=Math.floor((hj-new Date(pp.ini+'T00:00:00'))/864e5/7)+1}au=Math.max(1,Math.min(N,au));
+ const man=typeof al.lib==='number',cur=man?Math.max(0,Math.min(N,al.lib)):au,fase=g=>{const m=(pl.mesos||[])[Math.min((pl.mesos||[]).length-1,Math.floor((g-1)/4))];return m&&PH[m.c]?PH[m.c].n:''};return{N,au,man,cur,fase}}
+function libSet(n,v){const a=ld();if(!a[n])return;if(v===null)delete a[n].lib;else a[n].lib=v;a[n].u=Date.now();ST.setItem(KEY,JSON.stringify(a))}
+function libCard(n){const L=libInfo(n);if(!L)return'';const{N,au,man,cur,fase}=L,w=cur?((cur-1)%4)+1:0;
+ return`<div class="ac2"><b>Liberação no app do aluno</b><p style="margin:6px 0">${cur?`O aluno vê só a <b>semana ${cur} de ${N}</b>${fase(cur)?' · '+esc(fase(cur)):''}${w===4?' (deload)':''}.`:'<b>Nenhuma semana liberada.</b> O aluno vê que o próximo treino ainda vai ser liberado.'}</p>
+<small class="mu" style="display:block;margin-bottom:6px">${man?'Você controla a liberação. Pela data de início, seria a semana '+au+'.':'Automático: a semana muda sozinha pela data de início do treino.'}</small>
+<div class="row"><button class="btn" data-f="lib+" type="button"${cur>=N?' disabled':''}>${cur>=N?'Todas liberadas':'Liberar semana '+(cur+1)}</button><button class="btn s" data-f="lib-" type="button"${cur<1?' disabled':''}>${cur>=1?'Tirar semana '+cur:'Tirar semana'}</button>${man?'<button class="btn s" data-f="liba" type="button">Voltar ao automático</button>':''}</div>
+<div role="group" aria-label="Escolher a semana liberada" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">${Array.from({length:N},(_,i)=>`<button type="button" class="wk${i+1===cur?' on':''}" data-f="libn" data-v="${i+1}" aria-pressed="${i+1===cur}">${i+1}</button>`).join('')}</div></div>`}
+async function libGo(n,v){libSet(n,v);afRender();const m=$('afm'),L=libInfo(n),t=L.cur?'Semana '+L.cur+' liberada para '+n.split(' ')[0]+'.':'Nenhuma semana liberada para '+n.split(' ')[0]+'.';
+ if(SBS&&acList().includes(n)){m.textContent=t+' Publicando...';clearTimeout(libGo.t);libGo.t=setTimeout(async()=>{await acPublish();try{afRender()}catch(e){}const r=$('xaPm').textContent;$('afm').textContent=/^Publicado/.test(r)?t+' O aluno já vê no app.':t+' '+r},900)}
+ else m.textContent=t+(acList().includes(n)?' Toque em Publicar treinos (Mais > App do aluno) para o aluno ver.':' Dê acesso ao app para o aluno ver.')}
 let PGX=0;
 function pgTab(n){const{ex,wk}=gxData(n),names=Object.keys(ex).sort((a,b)=>ex[b].length-ex[a].length||a.localeCompare(b)),sg=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(0)+'%',G='<div class="g" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">';let h='<h3 style="margin-top:0">Cargas</h3>';
  if(!names.length)h+='<p class="mu" style="margin-top:0">Ainda não há cargas registradas. Elas chegam quando o aluno envia o progresso, ou quando você registra pelo botão Cargas de cada exercício.</p>';
@@ -1014,7 +1026,7 @@ function afRender(){const n=FI,a=ld(),s=a[n];if(!s||s.del){afList();return}
  if(FT==='r'){const idade=s.nasc?ageOf(s.nasc):0,dias=DW.filter(([k])=>s.dh&&s.dh[k]!==undefined).map(([k,l])=>l.split('-')[0]+(s.dh[k]?' '+s.dh[k]:'')).join(', ');
   b=acomp(n,s)+'<h3>Dados</h3>'+kv([['WhatsApp',s.tel?waFmt(s.tel):''],['E-mail',s.email],['Idade',idade>0?idade+' anos':''],['Modalidade',s.mod],['Status',STS[stOf(s)]],['Dias e horários',dias],['Frequência',fqTxt(n)],['Emergência',[s.emn,s.emt?waFmt(s.emt):''].filter(Boolean).join(' ')],['Observações',s.obs]])}
  else if(FT==='t'){const pp=(pl&&pl.p)||{},fb=fbAll().filter(x=>x.n===n).sort((x,y)=>String(y.d).localeCompare(String(x.d))||(y.u||0)-(x.u||0)).slice(0,6);let ap='';try{ap=acStatus(n)}catch(e){}
-  b=kv([['Treino',pl?'Salvo em '+new Date(pl.t||Date.now()).toLocaleDateString('pt-BR'):'Ainda sem treino'],['Duração',pl?((pl.mesos||[]).length*4||+pp.sem||'')+' semanas':''],['Início',pp.ini?dfmt(pp.ini):''],['App do aluno',ap]])+`<div class="row"><button class="btn" data-f="tr">${pl?'Ver/editar treino':'Montar treino'}</button></div>`+
+  b=kv([['Treino',pl?'Salvo em '+new Date(pl.t||Date.now()).toLocaleDateString('pt-BR'):'Ainda sem treino'],['Duração',pl?((pl.mesos||[]).length*4||+pp.sem||'')+' semanas':''],['Início',pp.ini?dfmt(pp.ini):''],['App do aluno',ap]])+`<div class="row"><button class="btn" data-f="tr">${pl?'Ver/editar treino':'Montar treino'}</button></div>`+libCard(n)+
   (fb.length?`<h3>Treinos feitos no app</h3>`+fb.map(x=>{const t=fbT(x);return`<div class="hr"><div class="t"><b>${esc(t[0])}</b><small>${esc(t[1])}</small></div></div>`}).join(''):'')}
  else if(FT==='g')b=pgTab(n);
  else if(FT==='a')b=avTab(n);
@@ -1042,6 +1054,7 @@ $('afc').onclick=e=>{const b=e.target.closest('button[data-f]');if(!b)return;con
  else if(k==='cm'){let m=CM.m+ +b.dataset.v,y=CM.y;if(m<0){m=11;y--}if(m>11){m=0;y++}CM={y,m};FD=null;afRender()}
  else if(k==='cy'){FYV=!FYV;afRender()}else if(k==='cyp'){CM={y:CM.y+ +b.dataset.v,m:CM.m};afRender()}else if(k==='cmo'){CM={y:CM.y,m:+b.dataset.m};FYV=false;FD=null;afRender()}
  else if(k==='cd'){FD=FD===b.dataset.d?null:b.dataset.d;afRender()}else if(k==='cdm'){calMan(n,b.dataset.d);afRender()}
+ else if(k==='lib+'){const L=libInfo(n);libGo(n,Math.min(L.N,L.cur+1))}else if(k==='lib-'){const L=libInfo(n);libGo(n,Math.max(0,L.cur-1))}else if(k==='liba')libGo(n,null);else if(k==='libn'){const v=+b.dataset.v,L=libInfo(n);libGo(n,v===L.cur?v-1:v)}
  else if(k==='foto')$('afo').click();else if(k==='fotox'){const q=rd('gt_fotos');delete q[n];ST.setItem('gt_fotos',JSON.stringify(q));afRender();$('afm').textContent='Foto removida.'}
  else if(k==='avs'){const pl=rd(PLK)[n],c=avDraft(n);if(c){setProf(Object.assign({},c,{nome:n}));rf();$('sv').value=n;avSave();const m=$('avm').textContent;afRender();$('afm').textContent=/salva no histórico/.test(m)?m+' Publique em Mais > App do aluno para o aluno ver.':m}}
  else if(k==='edit')afOpen(n);else if(k==='tr')alPlan(n);else if(k==='ac')acOpen(n);else if(k==='ct')ctPdf(n);
@@ -1174,6 +1187,7 @@ function acPayload(nome,o){const d=rd(PLK)[nome],al=ld()[nome];
  const dh=al&&al.dh||{},K={seg:1,ter:2,qua:3,qui:4,sex:5},wd=Object.keys(dh).map(k=>K[k]).filter(Boolean),hr={};Object.keys(dh).forEach(k=>{if(K[k])hr[K[k]]=dh[k]||''});
  const DN=['dom','seg','ter','qua','qui','sex','sáb'],dias=wd.length?wd.map(x=>DN[x]).join(', '):WK[p.dias]||'',w=wcard(p).split('<h3>Aeróbio</h3>'),cfg=acCfg(),
  pay={v:1,id:acSlug(nome),nome,rev:Date.now(),tr:{n:'Wanderlei',tel:waNum(cfg.tel)},ini:p.ini||'',sem:+p.sem||12,dias,wd:wd.length?wd:acWD[p.dias]||[],hr,obj:OBJ[p.obj]||'',niv:NIV[p.niv]||'',tempo:+p.tempo||0,mesos,gen:acTxt(w[0]),aer:acTxt(w[1]||'')};
+ if(al&&typeof al.lib==='number')pay.lw=al.lib;
  if(o.aval)pay.av=acAv(nome);
  if(o.cargas){const c=lgl()[nome];if(c&&Object.keys(c).length)pay.cg=c}
  return pay}

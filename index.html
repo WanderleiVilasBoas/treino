@@ -128,7 +128,7 @@ const CG=()=>Object.assign({},P.cg||{},S.cg);
 const NS=()=>Math.max(1,Math.min(+P.sem||12,(P.mesos||[]).length*4||12));
 function pos(g){g=Math.max(1,Math.min(NS(),g));return{g,mi:Math.min(P.mesos.length-1,Math.floor((g-1)/4)),w:(g-1)%4+1}}
 function autoSem(){const b=S.ini||P.ini;if(!b)return 1;const n=Math.floor((pd(tdy())-pd(b))/864e5/7)+1;return Math.max(1,Math.min(NS(),n))}
-const semAtual=()=>S.sem||autoSem();
+const semAtual=()=>typeof P.lw==='number'?Math.max(1,Math.min(NS(),P.lw)):autoSem(),naoLib=()=>P.lw===0;
 const toast=(t)=>{const e=$('ts');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2600)};
 const sesOk=()=>S.ses.filter(x=>!x.x);
 
@@ -193,7 +193,8 @@ function draw(){if(!P)return;const f={treino:vTreino,prog:vProg,aval:vAval,mais:
 /* ---------- treino ---------- */
 const first=()=>String(P.nome||'').trim().split(/\s+/)[0];
 function vPend(){const t=P.tr||{},tel=String(t.tel||'').replace(/\D/g,'');return`<div class="card" style="text-align:center;padding:26px 16px"><svg viewBox="0 0 24 24" width="46" height="46" aria-hidden="true" style="stroke:var(--ac);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round">${IC.treino}</svg><h1 style="margin:8px 0">Olá, ${esc(first())}!</h1><p class="mu" style="margin:0 0 6px">Seu treino está sendo preparado por ${esc(t.n||'seu treinador')}.</p><p class="mu" style="margin:0">Quando ficar pronto, ele aparece aqui. Basta abrir o app de novo.</p><div class="row m" style="justify-content:center">${tel?`<a class="btn" href="https://wa.me/${tel}" target="_blank" rel="noopener noreferrer">Falar com o treinador</a>`:''}<button class="s" data-a="atualizar">Verificar agora</button></div></div>`}
-function vTreino(){if(P.pend)return vPend();if(S.act&&S.act.fin)return vFim();if(S.act)return vSessao();
+function vNaoLib(){return`<p class="mu" style="margin:2px 0 0">Olá,</p><h1 style="margin-bottom:10px">${esc(first())}</h1><div class="card" style="text-align:center;padding:26px 16px"><h2 style="margin:0 0 6px">Seu próximo treino ainda não foi liberado</h2><p class="mu" style="margin:0">Assim que ${esc(P.tr&&P.tr.n||'seu treinador')} liberar, ele aparece aqui.</p></div>`}
+function vTreino(){if(P.pend)return vPend();if(S.act&&S.act.fin)return vFim();if(S.act)return vSessao();if(naoLib())return vNaoLib();
  const g=semAtual(),{mi,w}=pos(g),me=P.mesos[mi],novos=sesOk().filter(x=>x.u>(S.sent||0)).length;
  const feitos=di=>sesOk().find(x=>x.mi===mi&&x.w===w&&x.di===di),n=me.ds.length,fd=me.ds.filter((_,i)=>feitos(i)).length,nx=me.ds.findIndex((_,i)=>!feitos(i)),ni=nx<0?0:nx,d=me.ds[ni];
  return`<p class="mu" style="margin:2px 0 0">Olá,</p><h1 style="margin-bottom:10px">${esc(first())}</h1>
@@ -203,7 +204,7 @@ function vTreino(){if(P.pend)return vPend();if(S.act&&S.act.fin)return vFim();if
  <div class="wd" aria-hidden="true">${me.ds.map((x,i)=>`<span class="${feitos(i)?'on':''}">${feitos(i)?'✓':i+1}</span>`).join('')}</div>
  ${me.ds.map((x,i)=>{const f=feitos(i);return`<details class="dd"><summary><span>Dia ${i+1}: ${esc(x.nm)}</span>${f?'<span class="ok">✓ '+dm(f.d)+'</span>':''}</summary>${x.it.map(it=>`<div class="it"><span>${esc(it.n)}${it.h?'<span class="tg">Hammer</span>':''}</span><small class="mu">${it.s[w-1]} × ${esc(it.r)}</small></div>`).join('')}<div class="row m"><button class="s" data-a="ini" data-d="${i}">${f?'Treinar de novo':'Iniciar este treino'}</button></div></details>`}).join('')}</div>
  ${novos>=2?`<div class="card" style="border-color:var(--ac)"><b>${novos} treinos para mostrar ao seu treinador</b><div class="row m"><button data-a="enviar">Enviar progresso</button></div></div>`:''}
- <details class="card"><summary>Semana ${g} de ${NS()} · ${esc(me.f)}</summary><div class="chips" role="group" aria-label="Escolher semana" style="margin-top:8px">${Array.from({length:NS()},(_,i)=>`<button class="chip${i+1===g?' on':''}${!S.sem&&i+1===autoSem()?' au':''}" data-a="sem" data-g="${i+1}" aria-label="Semana ${i+1}"${i+1===g?' aria-current="true"':''}>${i+1}</button>`).join('')}</div>${S.sem?`<button class="s" data-a="semauto">Voltar para a semana automática</button>`:''}<p><small class="mu">${w===4?'Semana de deload: metade das séries e carga cerca de 10% menor.':'Meta: '+esc(me.ri[w-1])+' repetições em reserva nos exercícios principais.'}${P.dias?' Dias sugeridos: '+esc(P.dias)+'.':''}</small></p></details>`}
+ <div class="card"><b>Semana ${g} de ${NS()}</b><span class="mu"> · ${esc(me.f)}</span><p style="margin:6px 0 0"><small class="mu">${w===4?'Semana de deload: metade das séries e carga cerca de 10% menor.':'Meta: '+esc(me.ri[w-1])+' repetições em reserva nos exercícios principais.'}${P.dias?' Dias sugeridos: '+esc(P.dias)+'.':''}</small></p></div>`}
 function exKey(it){return S.act.mi+'|'+S.act.w+'|'+it.n}
 const e1=(kg,rp)=>{kg=nf(kg);rp=nf(rp);return kg>0&&rp>0?kg*(1+rp/30):0};
 function prev(name,g){const C=CG();let best=null,bs=-1;for(const k in C){const[a,b,...r]=k.split('|');if(r.join('|')!==name)continue;const sc=a*4+ +b;if(sc<g&&sc>bs){const rows=(C[k]||[]).filter(x=>x&&x[0]!=='');if(rows.length){bs=sc;best=rows}}}return best?{sc:bs,r:best}:null}
