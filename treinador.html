@@ -1187,7 +1187,8 @@ function acPayload(nome,o){const d=rd(PLK)[nome],al=ld()[nome];
  const dh=al&&al.dh||{},K={seg:1,ter:2,qua:3,qui:4,sex:5},wd=Object.keys(dh).map(k=>K[k]).filter(Boolean),hr={};Object.keys(dh).forEach(k=>{if(K[k])hr[K[k]]=dh[k]||''});
  const DN=['dom','seg','ter','qua','qui','sex','sáb'],dias=wd.length?wd.map(x=>DN[x]).join(', '):WK[p.dias]||'',w=wcard(p).split('<h3>Aeróbio</h3>'),cfg=acCfg(),
  pay={v:1,id:acSlug(nome),nome,rev:Date.now(),tr:{n:'Wanderlei',tel:waNum(cfg.tel)},ini:p.ini||'',sem:+p.sem||12,dias,wd:wd.length?wd:acWD[p.dias]||[],hr,obj:OBJ[p.obj]||'',niv:NIV[p.niv]||'',tempo:+p.tempo||0,mesos,gen:acTxt(w[0]),aer:acTxt(w[1]||'')};
- if(al&&typeof al.lib==='number')pay.lw=al.lib;
+ if(al&&typeof al.lib==='number'){pay.lw=al.lib;const g=al.lib,mi=g>0?Math.min(mesos.length-1,Math.floor((g-1)/4)):-1,w=g>0?(g-1)%4:-1;
+  pay.mesos=mesos.map((m,j)=>j!==mi?{f:m.f,d:m.d,ri:['','','',''],ds:[]}:{...m,ri:m.ri.map((r,k)=>k===w?r:''),ds:m.ds.map(d=>({...d,it:d.it.map(x=>({...x,s:x.s.map((v,k)=>k===w?v:0)}))}))})}
  if(o.aval)pay.av=acAv(nome);
  if(o.cargas){const c=lgl()[nome];if(c&&Object.keys(c).length)pay.cg=c}
  return pay}
