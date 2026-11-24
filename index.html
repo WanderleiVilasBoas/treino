@@ -136,7 +136,14 @@ const sesOk=()=>S.ses.filter(x=>!x.x);
 const fUS=()=>LS.g('ga_user')||'';
 const lk=async us=>{const d=await crypto.subtle.digest('SHA-256',enc.encode('gt:'+normPw(us)));return[...new Uint8Array(d)].slice(0,10).map(x=>x.toString(16).padStart(2,'0')).join('')};
 async function fetchFile(){const r=await fetch(new URL('treinos.json',location.href).href,{cache:'no-store'});if(!r.ok)throw new Error('http');return r.json()}
-async function viaFile(us,pw,rawKey){const f=await fetchFile(),k=await lk(us),e=(f.a||[]).find(x=>x.k===k);if(!e)throw new Error('nouser');const r=await openBlob(e.d,pw,rawKey);return{r,str:e.d}}
+const SBD={url:'https://cgaywmsyezaijnjifaaq.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnYXl3bXN5ZXphaWpuamlmYWFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0ODAxMjMsImV4cCI6MjExMTA1NjEyM30.SKsckNh0YZverEgf4ertSO8n4Pj11avT6ySKLZ46X3Y'},sbCfg=()=>{try{return JSON.parse(LS.g('ga_sb')||'null')||SBD}catch(e){return SBD}};
+async function sbRpc(c,fn,body){const r=await fetch(c.url+'/rest/v1/rpc/'+fn,{method:'POST',headers:Object.assign({apikey:c.key,'Content-Type':'application/json'},/^sb_/.test(c.key)?{}:{Authorization:'Bearer '+c.key}),body:JSON.stringify(body)});if(!r.ok)throw new Error('rpc '+r.status);const t=await r.text();return t?JSON.parse(t):null}
+async function viaFile(us,pw,rawKey){let f=null,fe=null;try{f=await fetchFile();if(f&&f.sb&&f.sb.url&&f.sb.key)LS.s('ga_sb',JSON.stringify({url:f.sb.url,key:f.sb.key}))}catch(e){fe=e}
+ const k=await lk(us),sbc=(f&&f.sb)||sbCfg();let d=null;
+ let rf=0;if(sbc){try{d=await sbRpc(sbc,'aluno_get',{p_k:k})}catch(e){rf=1}}
+ if(!d){const x=f&&(f.a||[]).find(y=>y.k===k);if(x)d=x.d;else if(rf)throw new Error('net');else if(!f)throw fe||new Error('http');else throw new Error('nouser')}
+ const r=await openBlob(d,pw,rawKey);return{r,str:d}}
+async function viaFileOld(us,pw,rawKey){const f=await fetchFile(),k=await lk(us),e=(f.a||[]).find(x=>x.k===k);if(!e)throw new Error('nouser');const r=await openBlob(e.d,pw,rawKey);return{r,str:e.d}}
 function loginView(msg){const pend=LS.g('ga_pend'),blob=LS.g('ga_blob'),user=fUS(),code=!!(pend||(blob&&!user)),hint=LS.g('ga_hint');
  $('nav').hidden=true;
  $('app').innerHTML=`<div class="card login"><h1>${hint?'Olá, '+esc(hint)+'!':'Meu treino'}</h1>
@@ -229,8 +236,8 @@ function fimSessao(){const A=S.act,me=P.mesos[A.mi],d=me.ds[A.di],C=CG();let set
  d.it.forEach((it,ii)=>{const key=exKey(it),rows=C[key]||[];let best=0;rows.forEach((r,k)=>{if(!A.dn[ii+'|'+k])return;sets++;const kg=nf(r&&r[0]),rp=nf(r&&r[1]);if(kg>0&&rp>0)vol+=kg*rp;best=Math.max(best,e1(r&&r[0],r&&r[1]))});
   if(best>0){let old=0;for(const k in C){const[a,b,...r]=k.split('|');if(r.join('|')!==it.n||k===key)continue;(C[k]||[]).forEach(x=>{old=Math.max(old,e1(x&&x[0],x&&x[1]))})}if(old>0&&best>old*1.005)prs.push(it.n)}});
  if(!sets&&!confirm('Você não marcou nenhuma série. Registrar o treino mesmo assim?'))return;
- const id=tdy()+'|'+A.di+'|'+A.t0,ses={id,d:tdy(),mi:A.mi,w:A.w,di:A.di,dur:Math.max(1,Math.round((Date.now()-A.t0)/60000)),u:Date.now()};
- S.ses=S.ses.filter(x=>x.id!==id);S.ses.push(ses);S.act={fin:1,res:{sets,vol:Math.round(vol),prs,dur:ses.dur,nm:d.nm,sid:id}};RT=null;save();draw();scrollTo(0,0)}
+ const id=tdy()+'|'+A.di+'|'+A.t0,ses={id,d:tdy(),mi:A.mi,w:A.w,di:A.di,dur:Math.max(1,Math.round((Date.now()-A.t0)/60000)),sr:sets,vl:Math.round(vol),u:Date.now()};
+ S.ses=S.ses.filter(x=>x.id!==id);S.ses.push(ses);S.act={fin:1,res:{sets,vol:Math.round(vol),prs,dur:ses.dur,nm:d.nm,sid:id}};RT=null;save();draw();scrollTo(0,0);autoEnv(500)}
 function fbOf(){const x=S.act&&S.act.res&&S.ses.find(z=>z.id===S.act.res.sid);return(x&&x.fb)||{}}
 function vFim(){const r=S.act.res,novos=sesOk().filter(x=>x.u>(S.sent||0)).length;
  return`<div class="card" style="text-align:center"><h1>Treino concluído!</h1><p class="mu">${esc(r.nm)}</p>
@@ -241,7 +248,11 @@ function vFim(){const r=S.act.res,novos=sesOk().filter(x=>x.u>(S.sent||0)).lengt
 
 /* ---------- progresso para o treinador ---------- */
 async function codigo(){const o={v:1,id:P.id,rev:P.rev,u:Date.now(),ses:S.ses,cg:S.cg},z=await zip(enc.encode(JSON.stringify(o))),b=new Uint8Array(z.length+1);b[0]=window.CompressionStream?1:0;b.set(z,1);return'GP1.'+b64u(b)}
-async function enviar(){let c;try{c=await codigo()}catch(e){toast('Não foi possível gerar o código.');return}
+const sbOn=()=>!!(sbCfg()&&P&&P.tk&&fUS());
+async function sbSend(){const c=sbCfg();await sbRpc(c,'aluno_send',{p_k:await lk(fUS()),p_tk:P.tk,p_c:await codigo()});S.sent=Date.now();save()}
+let AE=null;function autoEnv(ms){if(!sbOn())return;clearTimeout(AE);AE=setTimeout(()=>{sbSend().catch(()=>{})},ms||800)}
+async function enviar(){if(sbOn()){try{await sbSend();toast('Progresso enviado ao seu treinador');if(!S.act)draw();return}catch(e){toast('Sem conexão agora. Use o WhatsApp abaixo.')}}
+ let c;try{c=await codigo()}catch(e){toast('Não foi possível gerar o código.');return}
  const msg='Progresso de treino de '+P.nome+'. Código:\n'+c,tel=String(P.tr&&P.tr.tel||'').replace(/\D/g,'');
  S.sent=Date.now();save();
  const box=document.createElement('div');box.className='card';box.id='envbox';
@@ -315,7 +326,7 @@ function vMais(){const novos=sesOk().filter(x=>x.u>(S.sent||0)).length,tel=P.tr&
 
 /* ---------- eventos ---------- */
 var FBT;
-document.addEventListener('input',e=>{if(e.target.id!=='fbc'||!S.act||!S.act.res)return;const x=S.ses.find(z=>z.id===S.act.res.sid);if(!x)return;const f=x.fb=x.fb||{};f.c=e.target.value.slice(0,400);x.u=Date.now();clearTimeout(FBT);FBT=setTimeout(save,400)});
+document.addEventListener('input',e=>{if(e.target.id!=='fbc'||!S.act||!S.act.res)return;const x=S.ses.find(z=>z.id===S.act.res.sid);if(!x)return;const f=x.fb=x.fb||{};f.c=e.target.value.slice(0,400);x.u=Date.now();clearTimeout(FBT);FBT=setTimeout(()=>{save();autoEnv(2500)},400)});
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-go],[data-a]');if(!b||!P)return;
  if(b.dataset.go){go(b.dataset.go);return}
  const a=b.dataset.a;
@@ -328,7 +339,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-go],
  else if(a==='cancel'){if(confirm('Sair sem registrar este treino? As cargas anotadas continuam salvas.')){S.act=null;RT=null;save();draw()}}
  else if(a==='reiniciar'){if(confirm('Reiniciar este treino? O cronômetro volta a zero e as cargas anotadas neste treino são apagadas.')){const A=S.act;P.mesos[A.mi].ds[A.di].it.forEach(it=>{delete S.cg[exKey(it)]});S.act={di:A.di,mi:A.mi,w:A.w,t0:Date.now(),dn:{}};RT=null;save();draw()}}
  else if(a==='volta'){S.act=null;save();draw()}
- else if(a==='fb'){const x=S.act&&S.act.res&&S.ses.find(z=>z.id===S.act.res.sid);if(x){const v=b.dataset.v,f=x.fb=x.fb||{};f.i=f.i===v?'':v;x.u=Date.now();save();b.parentNode.querySelectorAll('button').forEach(q=>q.classList.toggle('on',q.dataset.v===f.i))}}
+ else if(a==='fb'){const x=S.act&&S.act.res&&S.ses.find(z=>z.id===S.act.res.sid);if(x){const v=b.dataset.v,f=x.fb=x.fb||{};f.i=f.i===v?'':v;x.u=Date.now();save();autoEnv(1500);b.parentNode.querySelectorAll('button').forEach(q=>q.classList.toggle('on',q.dataset.v===f.i))}}
  else if(a==='enviar')enviar();
  else if(a==='mes'){let m=CALM.m+ +b.dataset.n,y=CALM.y;if(m<0){m=11;y--}if(m>11){m=0;y++}CALM={y,m};SEL=null;draw()}
  else if(a==='dia'){SEL=SEL===b.dataset.d?null:b.dataset.d;draw();if(SEL)$('dsel').scrollIntoView({block:'nearest'})}
