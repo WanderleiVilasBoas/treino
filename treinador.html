@@ -766,7 +766,7 @@ function csMerge(k,loc,lt,cl){const c=cl.o,newer=cl.t>lt;
  if(k==='gt_aval'||k==='gt_freq'||k==='gt_anam'){const o={...c};for(const a in loc){const m=new Map();[...(c[a]||[]),...loc[a]].forEach(x=>{const y=m.get(x.id);if(!y||(x.u||0)>=(y.u||0))m.set(x.id,x)});o[a]=[...m.values()]}return o}
  if(k==='gt_cargas'){const o={...c};for(const a in loc)o[a]=newer?{...loc[a],...(c[a]||{})}:{...(c[a]||{}),...loc[a]};return o}
  if(lt>0)return newer?c:loc;
- const b={ed:{...(c.ed||{}),...(loc.ed||{})},add:[...(c.add||[])],del:[...new Set([...(c.del||[]),...(loc.del||[])])]};(loc.add||[]).forEach(x=>{if(!b.add.some(y=>y.n===x.n))b.add.push(x)});return b}
+ const ce=c.ed||{},le=loc.ed||{},ed={...ce};for(const n in le)ed[n]={...(ce[n]||{}),...Object.fromEntries(Object.entries(le[n]||{}).filter(([,v])=>v!==''&&v!=null))};const b={ed,add:[...(c.add||[])],del:[...new Set([...(c.del||[]),...(loc.del||[])])]};(loc.add||[]).forEach(x=>{if(!b.add.some(y=>y.n===x.n))b.add.push(x)});return b}
 async function csSync(k){const cl=await csGet(k),loc=rd(k),lt=+ST.getItem('gt_t_'+k)||0,has=Object.keys(loc).length>0;let ch=0;
  if(cl){const mg=csMerge(k,loc,lt,cl),ms=JSON.stringify(mg);
   if(ms!==JSON.stringify(loc)){CSn=1;ST.setItem(k,ms);CSn=0;ch=1}
