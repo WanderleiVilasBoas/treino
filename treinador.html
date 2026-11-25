@@ -77,6 +77,7 @@ details.dt{margin-top:14px;border-top:1px solid var(--bd);padding-top:10px}summa
 .cd{min-height:0;min-width:0;width:100%;aspect-ratio:1;border-radius:50%;border:1px solid transparent;background:var(--sf);color:var(--fg);font:inherit;font-size:14px;padding:0;cursor:pointer}.cd.ok{background:var(--ac);color:var(--on)}.cd.no{border-color:var(--mu);color:var(--mu)}.cd.hj{border-color:var(--ac);font-weight:700}.cd[aria-pressed=true]{outline:2px solid var(--ac);outline-offset:1px}.cd.e{visibility:hidden}
 .ac2{border:1px solid var(--bd);border-radius:12px;padding:12px;margin:10px 0}.ac2h{display:block;width:100%;min-height:0;text-align:left;background:transparent;border:0;padding:0;color:inherit;font:inherit;cursor:pointer}.ac2h small{display:block}
 #gate{position:fixed;inset:0;z-index:60;background:var(--bg);overflow:auto;display:flex;flex-direction:column;align-items:center}#gate[hidden]{display:none}#gate .gw{width:100%;max-width:420px;padding:24px 16px 40px;box-sizing:border-box}#gate img{display:block;width:100%;max-width:300px;margin:0 auto 18px}
+.kv.kvq{grid-template-columns:1fr;gap:2px}.kv.kvq dd{margin:0 0 10px;font-weight:600}
 .fh{display:flex;gap:12px;align-items:center}.fh .av{width:60px;height:60px;font-size:20px}.av img{width:100%;height:100%;object-fit:cover;display:block}.wn{background:var(--sf);border:1px solid var(--ac);border-radius:10px;padding:10px 12px;margin:10px 0}.wn p{margin:0 0 8px}
 .ft{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.ft button{white-space:nowrap}
 .kv{display:grid;grid-template-columns:minmax(100px,max-content) 1fr;gap:6px 14px;margin:0}.kv dt{color:var(--mu);font-size:13px}.kv dd{margin:0;word-break:break-word}
@@ -201,7 +202,7 @@ details.dt{margin-top:14px;border-top:1px solid var(--bd);padding-top:10px}summa
 const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* armazenamento: navegador + conta do Claude (quando disponível) */
 var CSP=null,CSn=0,CSc=null;
-const SYK=['gt_alunos','gt_cargas','gt_banco','gt_planos','gt_aval','gt_modelo','gt_freq','gt_acesso'];
+const SYK=['gt_alunos','gt_cargas','gt_banco','gt_planos','gt_aval','gt_modelo','gt_freq','gt_acesso','gt_anam'];
 const ST=(()=>{let ls=null;try{ls=window.localStorage;ls.setItem('gt_t','1');ls.removeItem('gt_t')}catch(e){ls=null}
  const mem={};
  return{ok:()=>!!ls,
@@ -689,7 +690,7 @@ $('imp').onclick=()=>$('impf').click();
 $('impf').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)impPdf(f)};
 
 /* sincronização com a conta (documentos privados em data/users/<id>) */
-const SYN=$('syn'),SYB=$('syb'),CH=100000,CSt={},CSq={},CSR={},CSd={},SNK=['gt_alunos','gt_planos','gt_aval','gt_acesso','gt_freq'];let CSbusy=0,CSlast=0;
+const SYN=$('syn'),SYB=$('syb'),CH=100000,CSt={},CSq={},CSR={},CSd={},SNK=['gt_alunos','gt_planos','gt_aval','gt_acesso','gt_freq','gt_anam'];let CSbusy=0,CSlast=0;
 const syt=(t,c)=>{if(SYN)SYN.textContent=t;if(SYB){SYB.textContent=t;SYB.dataset.c=c||''}};
 const hhmm=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 const sOk=()=>syt((SBS?'Dados salvos na sua nuvem':'Dados salvos na sua conta do Claude')+(CSlast?' às '+hhmm(CSlast):'')+'.','ok');
@@ -744,7 +745,7 @@ async function csGet(k){const m=await CSc.doc('m_'+k).get();if(!m.exists)return 
 function csMerge(k,loc,lt,cl){const c=cl.o,newer=cl.t>lt;
  if(k==='gt_alunos'||k==='gt_planos'){const o={...loc},ts=x=>x&&+(x.u||x.t)||0;for(const n in c){if(!(n in loc))o[n]=c[n];else{const x=ts(c[n]),y=ts(loc[n]);o[n]=x>y?c[n]:y>x?loc[n]:(newer?c[n]:loc[n])}}return o}
  if(k==='gt_modelo'||k==='gt_acesso')return(c.u||0)>(loc.u||0)?c:loc;
- if(k==='gt_aval'||k==='gt_freq'){const o={...c};for(const a in loc){const m=new Map();[...(c[a]||[]),...loc[a]].forEach(x=>{const y=m.get(x.id);if(!y||(x.u||0)>=(y.u||0))m.set(x.id,x)});o[a]=[...m.values()]}return o}
+ if(k==='gt_aval'||k==='gt_freq'||k==='gt_anam'){const o={...c};for(const a in loc){const m=new Map();[...(c[a]||[]),...loc[a]].forEach(x=>{const y=m.get(x.id);if(!y||(x.u||0)>=(y.u||0))m.set(x.id,x)});o[a]=[...m.values()]}return o}
  if(k==='gt_cargas'){const o={...c};for(const a in loc)o[a]=newer?{...loc[a],...(c[a]||{})}:{...(c[a]||{}),...loc[a]};return o}
  if(lt>0)return newer?c:loc;
  const b={ed:{...(c.ed||{}),...(loc.ed||{})},add:[...(c.add||[])],del:[...new Set([...(c.del||[]),...(loc.del||[])])]};(loc.add||[]).forEach(x=>{if(!b.add.some(y=>y.n===x.n))b.add.push(x)});return b}
@@ -995,6 +996,37 @@ function libCard(n){const L=libInfo(n);if(!L)return'';const{N,au,man,cur,fase}=L
 async function libGo(n,v){libSet(n,v);afRender();const m=$('afm'),L=libInfo(n),t=L.cur?'Semana '+L.cur+' liberada para '+n.split(' ')[0]+'.':'Nenhuma semana liberada para '+n.split(' ')[0]+'.';
  if(SBS&&acList().includes(n)){m.textContent=t+' Publicando...';clearTimeout(libGo.t);libGo.t=setTimeout(async()=>{await acPublish();try{afRender()}catch(e){}const r=$('xaPm').textContent;$('afm').textContent=/^Publicado/.test(r)?t+' O aluno já vê no app.':t+' '+r},900)}
  else m.textContent=t+(acList().includes(n)?' Toque em Publicar treinos (Mais > App do aluno) para o aluno ver.':' Dê acesso ao app para o aluno ver.')}
+const ANK='gt_anam',ANQ=[
+ ['Objetivo e rotina',[['obj','Qual é o seu objetivo?'],['prof','Profissão e rotina de trabalho (mais sentado, em pé, turnos)'],['disp','Quantos dias por semana e em quais horários pode treinar? Quanto tempo por treino?'],['exp','Experiência com musculação (há quanto tempo treina, já ficou parado?)'],['atv','Pratica outra atividade física? Há quanto tempo e quais?'],['pref','Exercícios que gosta e que não gosta']]],
+ ['Alimentação e hábitos',[['ref','Faz quantas refeições por dia?'],['die','Faz dieta? Acompanhada ou alguma específica?'],['sup','Faz suplementação? Quais?'],['agua','Quanta água bebe por dia?'],['alerg','Tem alergia ou intolerância alimentar?'],['sono','Dorme quantas horas por noite? Acorda descansado?'],['estr','Nível de estresse no dia a dia (0 a 10)'],['fum','Fuma? Quantos cigarros por dia?'],['alc','Consome bebidas alcoólicas? Quantas vezes por semana?']]],
+ ['Saúde',[['met','Tem colesterol, triglicérides ou glicose altos?'],['card','Tem alguma alteração cardíaca? Qual?'],['diab','Tem diabetes?'],['hip','É hipertenso?'],['pulm','Tem problemas pulmonares (asma, bronquite)?'],['med','Toma algum medicamento? Quais?'],['horm','Usa algum hormônio (anticoncepcional, reposição, outros)?'],['cir','Fez alguma cirurgia? Qual e quando?'],['orto','Tem algum problema ortopédico diagnosticado? Qual?'],['dor','Sente dor hoje em alguma parte do corpo? Onde e de 0 a 10?'],['les','Já teve lesões? Quais e quando?'],['fam','Histórico na família: doença cardíaca, morte súbita, diabetes ou pressão alta?'],['fem','Para mulheres: gestação, pós-parto ou ciclo menstrual irregular?'],['lib','Tem liberação médica para treinar? Fez exames recentes?']]],
+ ['Observações',[['obs','Observações']]]];
+let ANO=null,ANE=null,ANX=false;
+const anl=n=>(rd(ANK)[n]||[]).slice().sort((a,b)=>String(b.d).localeCompare(String(a.d))||(b.u||0)-(a.u||0));
+function anSave(n){const a=rd(ANK),d=$('anD').value||tdy(),r={};document.querySelectorAll('#aft [data-q]').forEach(e=>{const v=e.value.trim();if(v)r[e.dataset.q]=v});
+ if(!Object.keys(r).length){$('afm').textContent='Preencha ao menos uma resposta.';return}
+ a[n]=a[n]||[];const ex=ANE!=='new'&&a[n].find(x=>x.id===ANE);let id;if(ex){Object.assign(ex,{d,a:r,u:Date.now()});delete ex.x;id=ex.id}else{id=d+'|'+Date.now();a[n].push({id,d,a:r,u:Date.now()})}
+ ST.setItem(ANK,JSON.stringify(a));ANE=null;ANO=id;afRender();$('afm').textContent='Anamnese salva.'}
+function anRm(n,id,on){const a=rd(ANK),e=(a[n]||[]).find(x=>x.id===id);if(!e)return;if(on)e.x=1;else delete e.x;e.u=Date.now();ST.setItem(ANK,JSON.stringify(a))}
+function anTxt(n){return'Olá, '+n.split(' ')[0]+'! Para eu montar seu treino com segurança, responda por favor:\n\n'+ANQ.map(([t,q])=>t+'\n'+q.map(([,l],i)=>(i+1)+'. '+l).join('\n')).join('\n\n')}
+function anTab(n){const all=anl(n),L=all.filter(e=>!e.x),X=all.filter(e=>e.x),s=ld()[n]||{};
+ if(ANE){const e=ANE!=='new'&&all.find(x=>x.id===ANE),base=e?e.a:(L[0]?L[0].a:{});
+  return`<div class="row" style="margin-top:0"><button class="btn s" data-f="anb" type="button">‹ Cancelar</button></div><h3 style="margin-top:4px">${e?'Editar anamnese':'Nova anamnese'}</h3>${!e&&L[0]?'<small class="mu" style="display:block;margin-bottom:6px">As respostas vieram da última anamnese. Atualize o que mudou.</small>':''}
+<label>Data<input id="anD" type="date" value="${esc(e?e.d:tdy())}"></label>${ANQ.map(([t,q])=>`<h3>${esc(t)}</h3>`+q.map(([k,l])=>`<label>${esc(l)}<textarea data-q="${k}" rows="2">${esc(base[k]||'')}</textarea></label>`).join('')).join('')}
+<div class="row"><button class="btn" data-f="ans" type="button">Salvar anamnese</button><button class="btn s" data-f="anb" type="button">Cancelar</button></div>`}
+ if(ANO){const e=all.find(x=>x.id===ANO);if(e){const r=e.a||{},ext=Object.keys(r).filter(k=>!ANQ.some(([,q])=>q.some(([qk])=>qk===k)));
+  return`<div class="row" style="margin-top:0"><button class="btn s" data-f="ano0" type="button">‹ Anamneses</button></div><h3 style="margin-top:4px">Anamnese de ${esc(dfmt(e.d))}</h3>`+
+  ANQ.map(([t,q])=>{const rows=q.filter(([k])=>r[k]);return rows.length?`<h3>${esc(t)}</h3><dl class="kv kvq">${rows.map(([k,l])=>`<dt>${esc(l)}</dt><dd>${esc(r[k])}</dd>`).join('')}</dl>`:''}).join('')+
+  (ext.length?`<h3>Outras respostas</h3><dl class="kv kvq">${ext.map(k=>`<dt>${esc(k)}</dt><dd>${esc(r[k])}</dd>`).join('')}</dl>`:'')+
+  `<small class="mu" style="display:block;margin-top:6px">Perguntas sem resposta não aparecem.</small><div class="row"><button class="btn s" data-f="ane" data-id="${esc(e.id)}" type="button">Editar</button><button class="btn s" data-f="and" data-id="${esc(e.id)}" type="button">Excluir</button></div>`}ANO=null}
+ const u=waUrl(n,s.tel,anTxt(n));
+ let h=`<div class="row" style="margin-top:0"><button class="btn" data-f="ann" type="button">+ Nova anamnese</button>${u?`<a class="btn s" style="text-decoration:none" href="${esc(u)}" target="_blank" rel="noopener noreferrer">Mandar perguntas no WhatsApp</a>`:''}${X.length?`<button class="btn s" data-f="anx" type="button" aria-pressed="${ANX}">${ANX?'‹ Voltar':'Excluídas ('+X.length+')'}</button>`:''}</div>`;
+ const src=ANX?X:L;
+ h+=src.length?src.map(e=>{const r=e.a||{},tot=ANQ.reduce((a,[,q])=>a+q.length,0),nr=ANQ.reduce((a,[,q])=>a+q.filter(([k])=>r[k]).length,0);
+  return ANX?`<div class="ac2"><b>Anamnese de ${esc(dfmt(e.d))}</b><small class="mu" style="display:block">excluída</small><div class="row"><button class="btn s" data-f="anr" data-id="${esc(e.id)}" type="button">Restaurar</button></div></div>`
+  :`<div class="ac2"><button class="ac2h" data-f="ano" data-id="${esc(e.id)}" type="button"><b>Anamnese de ${esc(dfmt(e.d))}</b><small>${r.obj?'Objetivo: '+esc(r.obj):''}</small><small class="mu">${nr} de ${tot} perguntas respondidas</small></button></div>`}).join('')
+  :`<p class="mu">${ANX?'Nenhuma anamnese excluída.':'Nenhuma anamnese ainda. Toque em + Nova anamnese, ou mande as perguntas para o aluno responder no WhatsApp.'}</p>`;
+ return h}
 let PGX=0;
 function pgTab(n){const{ex,wk}=gxData(n),names=Object.keys(ex).sort((a,b)=>ex[b].length-ex[a].length||a.localeCompare(b)),sg=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(0)+'%',G='<div class="g" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">';let h='<h3 style="margin-top:0">Cargas</h3>';
  if(!names.length)h+='<p class="mu" style="margin-top:0">Ainda não há cargas registradas. Elas chegam quando o aluno envia o progresso, ou quando você registra pelo botão Cargas de cada exercício.</p>';
@@ -1016,7 +1048,7 @@ function afShow(v){$('alv').hidden=v!=='l';$('acad').hidden=v!=='f';$('afc').hid
 function afList(){FI=null;afShow('l');alList();scrollTo(0,0)}
 function afOpen(n){alForm(n);$('amg').textContent='';afShow('f');scrollTo(0,0);if(!n)$('an').focus()}
 function afBack(){const a=ld();if(FI&&a[FI]&&!a[FI].del)afFicha(FI,FT);else afList()}
-function afFicha(n,t,keep){FI=n;FT=t||'r';if(!keep){CM=null;FD=null;FYV=false;AVO=null;AVC=null;AVX=false}afShow('p');afRender();scrollTo(0,0)}
+function afFicha(n,t,keep){FI=n;FT=t||'r';if(!keep){CM=null;FD=null;FYV=false;AVO=null;AVC=null;AVX=false;ANO=null;ANE=null;ANX=false}afShow('p');afRender();scrollTo(0,0)}
 function fbAll(){const q=rd('gt_freq'),o=[];for(const n in q)(q[n]||[]).forEach(x=>{if(x&&!x.x&&((x.fb&&(x.fb.i||x.fb.c))||(!x.man&&x.dur>0)))o.push(Object.assign({n},x))});return o}
 const fbT=x=>{const f=x.fb||{},dy=fbDay(x.n,x);return[(FBL[f.i]||(f.c?'Comentário':'Treino concluído'))+(dy?' · '+dy:''),dfmt(x.d)+(x.dur?' · '+x.dur+' min':'')+(x.sr?' · '+x.sr+' séries':'')+(f.c?' · “'+String(f.c).slice(0,100)+'”':'')]};
 const MES3=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -1031,7 +1063,7 @@ function pgSet(n,ym,on){const a=ld();if(!a[n])return;const pg=Object.assign({},a
 const FBL={L:'Leve',I:'Ideal',P:'Pesado'};
 function fbDay(n,x){let d='';try{d=rd(PLK)[n].mesos[x.mi].ss[x.di].nm||''}catch(e){}return d}
 function afRender(){const n=FI,a=ld(),s=a[n];if(!s||s.del){afList();return}
- const pl=rd(PLK)[n],u=waUrl(n,s.tel),T=[['r','Resumo'],['t','Treino'],['f','Frequência'],['g','Progresso'],['a','Avaliações'],['p','Pagamentos'],['k','Acesso'],['c','Contrato']],kv=r=>{r=r.filter(x=>x[1]);return r.length?`<dl class="kv">${r.map(x=>`<dt>${x[0]}</dt><dd>${esc(x[1])}</dd>`).join('')}</dl>`:'<p class="mu">Nada cadastrado ainda. Use Editar cadastro.</p>'};
+ const pl=rd(PLK)[n],u=waUrl(n,s.tel),T=[['r','Resumo'],['t','Treino'],['f','Frequência'],['g','Progresso'],['a','Avaliações'],['n','Anamnese'],['p','Pagamentos'],['k','Acesso'],['c','Contrato']],kv=r=>{r=r.filter(x=>x[1]);return r.length?`<dl class="kv">${r.map(x=>`<dt>${x[0]}</dt><dd>${esc(x[1])}</dd>`).join('')}</dl>`:'<p class="mu">Nada cadastrado ainda. Use Editar cadastro.</p>'};
  let b='';
  if(FT==='r'){const idade=s.nasc?ageOf(s.nasc):0,dias=DW.filter(([k])=>s.dh&&s.dh[k]!==undefined).map(([k,l])=>l.split('-')[0]+(s.dh[k]?' '+s.dh[k]:'')).join(', ');
   b=acomp(n,s)+'<h3>Dados</h3>'+kv([['WhatsApp',s.tel?waFmt(s.tel):''],['E-mail',s.email],['Idade',idade>0?idade+' anos':''],['Modalidade',s.mod],['Status',STS[stOf(s)]],['Dias e horários',dias],['Frequência',fqTxt(n)],['Emergência',[s.emn,s.emt?waFmt(s.emt):''].filter(Boolean).join(' ')],['Observações',s.obs]])}
@@ -1040,6 +1072,7 @@ function afRender(){const n=FI,a=ld(),s=a[n];if(!s||s.del){afList();return}
   (fb.length?`<h3>Treinos feitos no app</h3>`+fb.map(x=>{const t=fbT(x);return`<div class="hr"><div class="t"><b>${esc(t[0])}</b><small>${esc(t[1])}</small></div></div>`}).join(''):'')}
  else if(FT==='g')b=pgTab(n);
  else if(FT==='a')b=avTab(n);
+ else if(FT==='n')b=anTab(n);
  else if(FT==='f')b=calTab(n);
  else if(FT==='p'){const L=pgDue(s),hj=new Date(),v=moeda(s.val);hj.setHours(0,0,0,0);
   b=L.length?`<p class="mu" style="margin-top:0">Mensalidade${v?' de '+esc(v):''}, vence todo dia ${esc(String(parseInt(s.ven,10)||(s.ci?+s.ci.slice(8,10):'')))}.</p>`+L.map(x=>{const r=Math.round((x.due-hj)/864e5),st=x.paid?'Pago em '+dfmt(x.paid):r<0?'Em atraso há '+(-r)+(r===-1?' dia':' dias'):r===0?'Vence hoje':'Vence em '+x.due.toLocaleDateString('pt-BR');return`<div class="hr"><div class="t"><b>${MES3[+x.ym.slice(5)-1]}/${x.ym.slice(0,4)}</b><small>${esc(st)}</small></div><button class="btn s" data-f="pg" data-m="${x.ym}" data-p="${x.paid?1:0}">${x.paid?'Desfazer':'Marcar pago'}</button></div>`}).join('')+`<div class="row"><button class="btn s" data-f="pgall">Marcar vencidos como pagos</button></div>`:'<p class="mu" style="margin-top:0">Para controlar os pagamentos, cadastre o dia do vencimento (e o valor) em Editar cadastro.</p>'}
@@ -1054,7 +1087,7 @@ function afRender(){const n=FI,a=ld(),s=a[n];if(!s||s.del){afList();return}
  <div class="hs ft" role="group" aria-label="Seções da ficha">${T.map(([k,l])=>`<button type="button" data-f="t_${k}" aria-pressed="${FT===k}">${l}</button>`).join('')}</div>
  <div id="aft">${b}</div></div>`}
 $('afc').onclick=e=>{const b=e.target.closest('button[data-f]');if(!b)return;const k=b.dataset.f,n=FI;if(!n)return;
- if(k==='back')afList();else if(k.startsWith('t_')){FT=k.slice(2);AVO=null;afRender()}
+ if(k==='back')afList();else if(k.startsWith('t_')){FT=k.slice(2);AVO=null;ANO=null;ANE=null;afRender()}
  else if(k==='pg'){pgSet(n,b.dataset.m,b.dataset.p!=='1');afRender()}else if(k==='pgall'){const hj=new Date();hj.setHours(0,0,0,0);pgDue(ld()[n]).filter(x=>!x.paid&&x.due<hj).forEach(x=>pgSet(n,x.ym,1));afRender()}
  else if(k==='avn')avGo(n,null);else if(k==='ave')avGo(n,b.dataset.id);else if(k==='avo'){AVO=b.dataset.id;afRender()}else if(k==='avb'){AVO=null;afRender()}
  else if(k==='avc'){AVC={a:b.dataset.id};afRender()}else if(k==='avcx'){AVC=null;afRender()}else if(k==='avx'){AVX=!AVX;afRender()}
@@ -1065,6 +1098,10 @@ $('afc').onclick=e=>{const b=e.target.closest('button[data-f]');if(!b)return;con
  else if(k==='cy'){FYV=!FYV;afRender()}else if(k==='cyp'){CM={y:CM.y+ +b.dataset.v,m:CM.m};afRender()}else if(k==='cmo'){CM={y:CM.y,m:+b.dataset.m};FYV=false;FD=null;afRender()}
  else if(k==='cd'){FD=FD===b.dataset.d?null:b.dataset.d;afRender()}else if(k==='cdm'){calMan(n,b.dataset.d);afRender()}
  else if(k==='lib+'){const L=libInfo(n);libGo(n,Math.min(L.N,L.cur+1))}else if(k==='lib-'){const L=libInfo(n);libGo(n,Math.max(0,L.cur-1))}else if(k==='liba')libGo(n,null);else if(k==='libn'){const v=+b.dataset.v,L=libInfo(n);libGo(n,v===L.cur?v-1:v)}
+ else if(k==='ann'){ANE='new';ANO=null;afRender();scrollTo(0,0)}else if(k==='ane'){ANE=b.dataset.id;afRender();scrollTo(0,0)}else if(k==='anb'){ANE=null;afRender()}else if(k==='ans')anSave(n);
+ else if(k==='ano'){ANO=b.dataset.id;afRender()}else if(k==='ano0'){ANO=null;afRender()}else if(k==='anx'){ANX=!ANX;afRender()}
+ else if(k==='anr'){anRm(n,b.dataset.id,0);if(!anl(n).some(x=>x.x))ANX=false;afRender();$('afm').textContent='Anamnese restaurada.'}
+ else if(k==='and'){if(b.dataset.c){anRm(n,b.dataset.id,1);ANO=null;afRender();$('afm').textContent='Anamnese excluída. Ela fica em Excluídas e pode ser restaurada.'}else{b.dataset.c='1';b.textContent='Confirmar exclusão';setTimeout(()=>{if(b.isConnected){delete b.dataset.c;b.textContent='Excluir'}},4000)}}
  else if(k==='foto')$('afo').click();else if(k==='fotox'){const q=rd('gt_fotos');delete q[n];ST.setItem('gt_fotos',JSON.stringify(q));afRender();$('afm').textContent='Foto removida.'}
  else if(k==='avs'){const pl=rd(PLK)[n],c=avDraft(n);if(c){setProf(Object.assign({},c,{nome:n}));rf();$('sv').value=n;avSave();const m=$('avm').textContent;afRender();$('afm').textContent=/salva no histórico/.test(m)?m+' Publique em Mais > App do aluno para o aluno ver.':m}}
  else if(k==='edit')afOpen(n);else if(k==='tr')alPlan(n);else if(k==='ac')acOpen(n);else if(k==='ct')ctPdf(n);
@@ -1290,7 +1327,7 @@ function alPlan(n){const p=ld()[n];if(!p)return;setProf(p);rf();$('sv').value=n;
  if(rd(PLK)[n]){$('bo').onclick()}else{$('msg').textContent=n+' ainda não tem treino. Confira o perfil, clique em Gerar plano e depois em Salvar plano.';$('in').scrollIntoView()}}
 
 /* ---- segurança dos dados: backup, lixeira, voltar no tempo ---- */
-const BKS=['gt_alunos','gt_planos','gt_aval','gt_freq','gt_cargas','gt_acesso','gt_modelo','gt_banco'];
+const BKS=['gt_alunos','gt_planos','gt_aval','gt_freq','gt_cargas','gt_acesso','gt_modelo','gt_banco','gt_anam'];
 function bkApply(){rf();alList();walUpd();avH();bkUi();const b=rd(BK);DB.ed=b.ed||{};DB.add=b.add||[];DB.del=b.del||[];eff();rb()}
 $('bkD').onclick=async()=>{const m=$('bkM');try{const d={};BKS.forEach(k=>{d[k]=rd(k)});await fsave('backup-gerador-treino-'+tdy()+'.json',new Blob([JSON.stringify({app:'gerador-treino',v:21,t:Date.now(),d})],{type:'application/json'}));m.textContent='Backup baixado. Ele tem dados de saúde e as senhas dos alunos: guarde com cuidado.'}catch(e){m.textContent=e&&e.code==='declined'?'Download cancelado.':'Não foi possível baixar o backup.'}};
 $('bkR').onclick=()=>$('bkF').click();
