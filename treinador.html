@@ -1204,7 +1204,7 @@ function acPayload(nome,o){const d=rd(PLK)[nome],al=ld()[nome];
  return pay}
 async function acBuild(nome,pw,o){const pay=acPayload(nome,o),code=await acEnc(pay,pw),cfg=acCfg(),base=String(cfg.url||'').trim().replace(/#.*$/,'');return{pay,code,link:base?base+'#d='+code:''}}
 let ACN=null;
-function acOpen(n){ACN=n;const cfg=acCfg(),c=acEnsure(n);$('xaU').value=cfg.url||'';$('xaT').value=cfg.tel?waFmt(cfg.tel):'';$('xaP').hidden=false;$('xaN').textContent='Acesso de '+n;$('xaUs').value=c.us;$('xaS').value=c.pw;$('xaR').innerHTML='';$('xaSt').textContent='';$('xaM').textContent=rd(PLK)[n]?'':'Este aluno ainda não tem treino salvo. Ele já pode entrar e verá que o treino está em preparação.';acWa();alList();tab('M');$('xaC0').scrollIntoView({block:'start'})}
+function acOpen(n){ACN=n;const cfg=acCfg(),c=acEnsure(n);$('xaU').value=cfg.url||'';$('xaT').value=cfg.tel?waFmt(cfg.tel):'';$('xaP').hidden=false;$('xaN').textContent='Acesso de '+n;$('xaUs').value=c.us;$('xaS').value=c.pw;$('xaR').innerHTML='';$('xaSt').textContent='';$('xaM').textContent=rd(PLK)[n]?'':'Este aluno ainda não tem treino salvo. Ele já pode entrar e verá que o treino está em preparação.';acWa();alList();tab('M');$('xaC0').scrollIntoView({block:'start'});acAuto(n)}
 $('xaG').onclick=()=>{$('xaS').value=acRand();acCred()};
 $('xaCs').onclick=()=>{const u=$('xaU').value.trim(),t=$('xaT').value.trim(),m=$('xaCm');if(u&&!/^https:\/\/[^\s]+$/i.test(u)){m.textContent='O endereço precisa começar com https://';return}if(t&&!waNum(t)){m.textContent='WhatsApp inválido. Use DDD e número.';return}
  try{const c=acCfg();c.url=u;c.tel=waNum(t);c.u=Date.now();ST.setItem('gt_acesso',JSON.stringify(c));m.textContent='Configuração salva.'}catch(e){m.textContent='Não foi possível salvar.'}};
@@ -1244,9 +1244,11 @@ function acCred(){const n=ACN,m=$('xaSt');if(!n)return false;const c=acCfg(),us=
  if(!/^[a-z0-9._-]{3,24}$/.test(us)){m.textContent='Usuário: 3 a 24 letras minúsculas, números, ponto, traço ou sublinhado.';return false}
  if(acNorm(pw).length<6){m.textContent='A senha precisa ter ao menos 6 caracteres.';return false}
  c.us=c.us||{};c.pw=c.pw||{};if(Object.entries(c.us).some(([k,v])=>k!==n&&v===us)){m.textContent='Esse usuário já é de outro aluno.';return false}
- if(c.us[n]!==us||c.pw[n]!==pw){c.us[n]=us;c.pw[n]=pw;c.u=Date.now();ST.setItem('gt_acesso',JSON.stringify(c));m.textContent='Acesso salvo. Publique os treinos para valer.'}
+ if(c.us[n]!==us||c.pw[n]!==pw){c.us[n]=us;c.pw[n]=pw;c.u=Date.now();ST.setItem('gt_acesso',JSON.stringify(c));m.textContent=SBS?'Acesso salvo.':'Acesso salvo. Publique os treinos para valer.';acAuto(n)}
  else m.textContent='';
  acWa();alList();return true}
+function acAuto(n){if(!SBS)return;let st='';try{st=acStatus(n)}catch(e){}if(st==='App: treino publicado'||st==='App: aguardando treino')return;
+ clearTimeout(acAuto.t);acAuto.t=setTimeout(async()=>{const m=$('xaSt');m.textContent='Liberando o acesso online...';await acPublish();m.textContent=/^Publicado/.test($('xaPm').textContent)?'Pronto: '+n.split(' ')[0]+' já pode entrar no app com esse usuário e senha.':$('xaPm').textContent},700)}
 let ACM='';
 function acWa(){const n=ACN,c=acCfg();if(!n||!c.us||!c.us[n])return;const nm1=n.trim().split(/\s+/)[0],url=String(c.url||'').trim().replace(/#.*$/,'');
  ACM='Olá, '+nm1+'! Seu app de treino está pronto.\n\nEndereço: '+(url||'(endereço do app)')+'\nUsuário: '+c.us[n]+'\nSenha: '+(c.pw[n]||'')+'\n\nAbra o endereço no celular e entre. Para ter o app como ícone, use "Adicionar à tela inicial" no navegador. Guarde a senha só com você.';
