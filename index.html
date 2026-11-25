@@ -77,6 +77,7 @@ svg.gr{width:100%;height:auto;display:block}
 .login{max-width:420px;margin:24px auto}
 a{color:var(--ac)}.btn{color:var(--on)}.btn.s{color:var(--fg)}
 .hero{background:var(--ac);color:var(--on);border:0}
+.md{display:block;width:100%;max-height:240px;object-fit:contain;background:#fff;border-radius:10px;margin:8px 0}
 .trc{display:flex;align-items:center;gap:12px;margin:2px 0 10px}.trc b{display:block;font-size:15px}.trc small{color:var(--mu)}
 .av{width:52px;height:52px;border-radius:50%;overflow:hidden;flex:none;display:flex;align-items:center;justify-content:center;background:var(--sf);color:var(--ac);border:2px solid var(--ac);font-weight:800;font-size:17px}.av img{width:100%;height:100%;object-fit:cover;display:block}.av.xl{width:96px;height:96px;font-size:30px;margin:0 auto}
 .hi{margin:4px 0 10px}
@@ -246,6 +247,8 @@ const e1=(kg,rp)=>{kg=nf(kg);rp=nf(rp);return kg>0&&rp>0?kg*(1+rp/30):0};
 function prev(name,g){const C=CG();let best=null,bs=-1;for(const k in C){const[a,b,...r]=k.split('|');if(r.join('|')!==name)continue;const sc=a*4+ +b;if(sc<g&&sc>bs){const rows=(C[k]||[]).filter(x=>x&&x[0]!=='');if(rows.length){bs=sc;best=rows}}}return best?{sc:bs,r:best}:null}
 function sug(it,w,pv){if(w===4)return'Deload: use cerca de 10% menos carga que na semana anterior.';const m=String(it.r).match(/\d+/g)||['8','12'],lo=+m[0],hi=+(m[1]||m[0]),rp=pv.r.map(x=>nf(x[1])||0);
  if(rp.every(x=>x>=hi))return'Bateu o topo da faixa ('+hi+'): suba a carga em 2 a 5%.';if(rp.some(x=>x&&x<lo))return'Ficou abaixo da faixa ('+lo+'): reduza um pouco a carga.';return'Mantenha a carga e tente somar repetições até '+hi+'.'}
+const mdOk=u=>/^https:\/\/[^\s"'<>]+$/i.test(u||'');
+const mdH=it=>mdOk(it.mv)?(/\.(mp4|webm)(\?|$)/i.test(it.mv)?`<video class="md" src="${esc(it.mv)}" muted loop autoplay playsinline preload="metadata" aria-label="Demonstração de ${esc(it.n)}"></video>`:`<img class="md" src="${esc(it.mv)}" alt="Demonstração de ${esc(it.n)}" loading="lazy">`):mdOk(it.im)?`<img class="md" src="${esc(it.im)}" alt="${esc(it.n)}" loading="lazy">`:'';
 const videoUrl=it=>it.v||'https://www.youtube.com/results?search_query='+encodeURIComponent(it.n+(it.h?' Hammer Strength':'')+' execução');
 const serTot=()=>{const A=S.act;return P.mesos[A.mi].ds[A.di].it.reduce((a,it)=>a+it.s[A.w-1],0)};
 function vSessao(){const A=S.act,me=P.mesos[A.mi],d=me.ds[A.di],g=A.mi*4+A.w,C=CG(),tot=serTot(),dn=Object.keys(A.dn).length;
@@ -253,7 +256,7 @@ function vSessao(){const A=S.act,me=P.mesos[A.mi],d=me.ds[A.di],g=A.mi*4+A.w,C=C
  <div id="rt"></div>
  ${d.wu?`<details class="card"><summary>Aquecimento</summary><p class="mu" style="margin:6px 0 0">${esc(d.wu)}</p></details>`:''}
  ${d.it.map((it,ii)=>{const key=exKey(it),cur=C[key]||[],pv=prev(it.n,g),N=it.s[A.w-1],pr=pv?pv.r:[],dica=[it.g,it.u?'Unilateral: comece pelo lado mais fraco.':'',it.l?'Exercício '+it.l+'.':'',pv?sug(it,A.w,pv):''].filter(Boolean);
-  return`<div class="card ex" style="margin:10px 0"><h3>${esc(it.n)}${it.h?'<span class="tg">Hammer</span>':''}</h3>
+  return`<div class="card ex" style="margin:10px 0"><h3>${esc(it.n)}${it.h?'<span class="tg">Hammer</span>':''}</h3>${mdH(it)}
   <div class="mu" style="font-size:13px">${esc(it.m)} · ${N} × ${esc(it.r)} · descanso ${esc(it.d)}</div>
   ${pv?`<small class="mu">Última vez: ${pv.r.map(x=>esc(x[0])+' kg × '+esc(x[1]||'?')).join(', ')}</small>`:''}
   ${Array.from({length:N},(_,k)=>{const r=cur[k]||['',''],ph=pr[Math.min(k,pr.length-1)]||['',''],on=A.dn[ii+'|'+k];return`<div class="st"><b>${k+1}</b><input inputmode="decimal" data-i="${ii}" data-k="${k}" data-f="0" placeholder="${esc(ph[0]||'kg')}" value="${esc(r[0])}" aria-label="Carga em kg, série ${k+1}"><input inputmode="numeric" data-i="${ii}" data-k="${k}" data-f="1" placeholder="${esc(ph[1]||'reps')}" value="${esc(r[1])}" aria-label="Repetições, série ${k+1}"><button class="ck${on?' on':''}" data-a="ck" data-i="${ii}" data-k="${k}" aria-pressed="${on?'true':'false'}" aria-label="Série ${k+1} concluída">✓</button></div>`}).join('')}
