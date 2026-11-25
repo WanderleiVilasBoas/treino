@@ -153,12 +153,15 @@ details.dt{margin-top:14px;border-top:1px solid var(--bd);padding-top:10px}summa
 </div>
 <div id="pM" role="tabpanel" aria-labelledby="tM" hidden>
 <div class="hh"><small>Configurações e ferramentas</small><h1>Mais</h1></div>
-<div class="hs" id="mnv" role="group" aria-label="Ir para"><button type="button" data-m="sbC" id="sbN" hidden>Nuvem</button><button type="button" data-m="xaC0">App do aluno</button><button type="button" data-m="ctC">Contrato</button><button type="button" data-m="bkC">Backup</button></div>
+<div class="hs" id="mnv" role="group" aria-label="Ir para"><button type="button" data-m="sbC" id="sbN" hidden>Nuvem</button><button type="button" data-m="meC">Seu perfil</button><button type="button" data-m="xaC0">App do aluno</button><button type="button" data-m="ctC">Contrato</button><button type="button" data-m="bkC">Backup</button></div>
 <div class="card" id="sbC" hidden><h2>Nuvem (Supabase)</h2>
 <p class="mu">Salva alunos, treinos e avaliações online, para usar em qualquer aparelho. Com a nuvem conectada, Publicar treinos manda direto para o app do aluno e o progresso dele chega sozinho aqui.</p>
 <div id="sbO"><div class="g"><label style="grid-column:1/-1">Project URL<input id="sbU" type="url" inputmode="url" placeholder="https://abcdefgh.supabase.co" autocomplete="off" spellcheck="false"></label><label style="grid-column:1/-1">Chave anon (public)<input id="sbK" autocomplete="off" spellcheck="false" autocapitalize="none"></label><label>E-mail<input id="sbE" type="email" autocomplete="username"></label><label>Senha<input id="sbP" type="password" autocomplete="current-password"></label></div><div class="row"><button class="btn" id="sbL" type="button">Entrar</button></div></div>
 <div id="sbI" hidden><p id="sbW" style="margin:0 0 8px"></p><div class="row"><button class="btn s" id="sbJ" type="button">Baixar treinos.json de configuração</button><button class="btn s" id="sbS" type="button">Sincronizar agora</button><button class="btn s" id="sbX" type="button">Sair</button></div><small class="mu">O treinos.json de configuração sobe uma vez só no GitHub, junto do app do aluno. Ele não tem dados de alunos, só o endereço da sua nuvem.</small></div>
 <span id="sbM" class="mu" role="status" style="display:block;margin-top:6px"></span></div>
+<div class="card" id="meC"><h2>Seu perfil no app do aluno</h2><p class="mu" style="margin-top:0">Aparece no topo do app de todos os alunos.</p>
+<div style="display:flex;gap:14px;align-items:center;margin:8px 0"><button type="button" id="meFb" class="av" style="width:72px;height:72px;font-size:22px" aria-label="Trocar sua foto"></button><div style="flex:1"><label>Nome<input id="meN" autocomplete="name"></label><label>CREF<input id="meR" placeholder="MG-000000"></label></div></div>
+<input type="file" id="meF" accept="image/*" hidden><div class="row"><button class="btn" id="meS" type="button">Salvar perfil</button><button class="btn s" id="meT" type="button">Trocar foto</button></div><span id="meM" class="mu" role="status" style="display:block;margin-top:6px"></span></div>
 <div class="card" id="xaC0"><h2>App do aluno</h2>
 <p class="mu">O aluno abre o app no celular com usuário e senha e vê só o treino dele. Você monta e edita tudo aqui. Ao terminar, toque em Publicar treinos e suba o arquivo treinos.json no mesmo lugar do app-aluno.html. O aluno pode entrar mesmo sem treino: ele vê que o treino está em preparação.</p>
 <div class="card" style="background:var(--sf);margin:10px 0"><b>Publicar treinos</b><div id="xaPs" class="mu" style="margin:4px 0"></div><div class="row" style="margin-top:6px"><button class="btn" id="xaPb" type="button">Publicar treinos (baixar treinos.json)</button><span id="xaPm" class="mu" role="status"></span></div>
@@ -202,7 +205,7 @@ details.dt{margin-top:14px;border-top:1px solid var(--bd);padding-top:10px}summa
 const $=i=>document.getElementById(i),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* armazenamento: navegador + conta do Claude (quando disponível) */
 var CSP=null,CSn=0,CSc=null;
-const SYK=['gt_alunos','gt_cargas','gt_banco','gt_planos','gt_aval','gt_modelo','gt_freq','gt_acesso','gt_anam'];
+const SYK=['gt_alunos','gt_cargas','gt_banco','gt_planos','gt_aval','gt_modelo','gt_freq','gt_acesso','gt_anam','gt_fotos'];
 const ST=(()=>{let ls=null;try{ls=window.localStorage;ls.setItem('gt_t','1');ls.removeItem('gt_t')}catch(e){ls=null}
  const mem={};
  return{ok:()=>!!ls,
@@ -711,7 +714,7 @@ const sbCol=()=>({doc:id=>({get:async()=>{const a=await sbF('docs?select=data&id
  delete:async()=>{await sbF('docs?id=eq.'+sbQ(id),{method:'DELETE'})}})});
 let SBPB=0;
 async function sbPull(){if(!SBS||SBPB)return;SBPB=1;try{const L=await sbF('prog?select=k,id,c');const ok=[];
- for(const r of L||[]){try{const x=await acImport(r.c);ok.push(x.nome+(x.ns?' (+'+x.ns+' treino'+(x.ns>1?'s':'')+')':''));await sbF('prog?k=eq.'+sbQ(r.k)+'&id=eq.'+sbQ(r.id),{method:'DELETE'})}catch(e){}}
+ for(const r of L||[]){try{const x=await acImport(r.c);ok.push(x.nome+(x.ns?' (+'+x.ns+' treino'+(x.ns>1?'s':'')+')':'')+(x.an?' (anamnese nova)':'')+(x.ft?' (foto nova)':''));await sbF('prog?k=eq.'+sbQ(r.k)+'&id=eq.'+sbQ(r.id),{method:'DELETE'})}catch(e){}}
  if(ok.length){$('xaIm').textContent='Progresso recebido: '+ok.join(', ')+'.';try{alList()}catch(e){}try{hRender()}catch(e){}try{if(FI&&!$('afc').hidden)afRender()}catch(e){}}}
  catch(e){}SBPB=0}
 function sbUi(){const on=!window.claude;$('sbC').hidden=!on;$('sbN').hidden=!on;if(!on)return;$('sbO').hidden=!!SBS;$('sbI').hidden=!SBS;
@@ -744,6 +747,7 @@ async function csPush(k){const s=ST.getItem(k)||'{}',n=Math.max(1,Math.ceil(s.le
 async function csGet(k){const m=await CSc.doc('m_'+k).get();if(!m.exists)return null;const{n,t}=m.data();let s='';for(let i=0;i<n;i++){const d=await CSc.doc('c_'+k+'_'+i).get();if(!d.exists)return null;s+=d.data().s}CSt[k]=n;return{t,o:JSON.parse(s)}}
 function csMerge(k,loc,lt,cl){const c=cl.o,newer=cl.t>lt;
  if(k==='gt_alunos'||k==='gt_planos'){const o={...loc},ts=x=>x&&+(x.u||x.t)||0;for(const n in c){if(!(n in loc))o[n]=c[n];else{const x=ts(c[n]),y=ts(loc[n]);o[n]=x>y?c[n]:y>x?loc[n]:(newer?c[n]:loc[n])}}return o}
+ if(k==='gt_fotos')return newer?{...loc,...c}:{...c,...loc};
  if(k==='gt_modelo'||k==='gt_acesso')return(c.u||0)>(loc.u||0)?c:loc;
  if(k==='gt_aval'||k==='gt_freq'||k==='gt_anam'){const o={...c};for(const a in loc){const m=new Map();[...(c[a]||[]),...loc[a]].forEach(x=>{const y=m.get(x.id);if(!y||(x.u||0)>=(y.u||0))m.set(x.id,x)});o[a]=[...m.values()]}return o}
  if(k==='gt_cargas'){const o={...c};for(const a in loc)o[a]=newer?{...loc[a],...(c[a]||{})}:{...(c[a]||{}),...loc[a]};return o}
@@ -777,7 +781,7 @@ async function csInit(){
  CSbusy=0;
  try{if(ch.includes('gt_alunos')){rf();alList();walUpd()}if(ch.includes('gt_aval'))avH();
   if(ch.includes(BK)){const b=rd(BK);DB.ed=b.ed||{};DB.add=b.add||[];DB.del=b.del||[];eff();rb()}bkUi();hRender()}catch(e){}
- if(bad){syt(sEr,'er');setTimeout(csInit,15000)}else{CSlast=Date.now();sOk();csSnap();if(SBS)sbPull()}}
+ if(bad){syt(sEr,'er');setTimeout(csInit,15000)}else{CSlast=Date.now();sOk();csSnap();if(SBS)sbPull();try{meUi()}catch(e){}}}
 
 /* ---- edição manual, salvar plano ---- */
 let DED=null,DIRTY=0,GW=0,PSM='',GXS=0,PSA=0;
@@ -1059,7 +1063,7 @@ function pgDue(s){const dv=parseInt(s.ven,10)||(s.ci?+s.ci.slice(8,10):0);if(!(d
   const ym=m.getFullYear()+'-'+String(m.getMonth()+1).padStart(2,'0');o.push({ym,due,paid:(s.pg||{})[ym]||''})}
  return o}
 const pgLate=s=>{if(stOf(s)!=='a')return false;const t=Date.now();return pgDue(s).some(x=>!x.paid&&t-x.due>864e5&&t-x.due<63*864e5)};
-function pgSet(n,ym,on){const a=ld();if(!a[n])return;const pg=Object.assign({},a[n].pg||{});if(on)pg[ym]=tdy();else delete pg[ym];a[n]=Object.assign({},a[n],{pg,u:Date.now()});ST.setItem(KEY,JSON.stringify(a));rf()}
+function pgSet(n,ym,on){const a=ld();if(!a[n])return;const pg=Object.assign({},a[n].pg||{});if(on)pg[ym]=tdy();else delete pg[ym];a[n]=Object.assign({},a[n],{pg,u:Date.now()});ST.setItem(KEY,JSON.stringify(a));rf();acRepub(n)}
 const FBL={L:'Leve',I:'Ideal',P:'Pesado'};
 function fbDay(n,x){let d='';try{d=rd(PLK)[n].mesos[x.mi].ss[x.di].nm||''}catch(e){}return d}
 function afRender(){const n=FI,a=ld(),s=a[n];if(!s||s.del){afList();return}
@@ -1212,7 +1216,11 @@ $('cts').onclick=()=>{try{ST.setItem(CTK,JSON.stringify({t:$('ctt').value,u:Date
 $('ctr').onclick=()=>{try{ST.setItem(CTK,JSON.stringify({t:'',u:Date.now()}));$('ctt').value=CTD;$('ctm').textContent='Modelo original restaurado.'}catch(e){$('ctm').textContent='Não foi possível restaurar.'}};
 
 /* ---- app do aluno ---- */
-const acCfg=()=>Object.assign({url:'',tel:'35999478509',pw:{},u:0},rd('gt_acesso'));
+const acCfg=()=>Object.assign({url:'',tel:'35999478509',pw:{},u:0,tn:'Wanderlei Vilas Boas',cref:'MG-053227'},rd('gt_acesso'));
+const acTr=()=>{const c=acCfg(),t={n:c.tn||'Wanderlei',tel:waNum(c.tel)};if(c.cref)t.cref=c.cref;if(c.tf)t.f=c.tf;return t};
+function acExtra(pay,nome,al){const f=fotoOf(nome);if(f)pay.ft=f;
+ if(al){const L=pgDue(al);if(al.val||L.length)pay.fin={val:moeda(al.val)||'',ven:parseInt(al.ven,10)||0,m:L.map(x=>({ym:x.ym,due:ymd(x.due),paid:x.paid||''}))}}
+ pay.anq=ANQ;const an=(rd('gt_anam')[nome]||[]).filter(e=>!e.x).sort((a,b)=>String(b.d).localeCompare(String(a.d))||(b.u||0)-(a.u||0))[0];if(an)pay.an={id:an.id,d:an.d,a:an.a};return pay}
 const acSlug=n=>String(n).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'aluno';
 const ab64=u=>{let t='';for(let i=0;i<u.length;i+=0x8000)t+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(t).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
 const aub=t=>{t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';const q=atob(t),u=new Uint8Array(q.length);for(let i=0;i<q.length;i++)u[i]=q.charCodeAt(i);return u};
@@ -1228,17 +1236,17 @@ const acTxt=h=>{const d=document.createElement('div');d.innerHTML=h;return[...d.
 const acWD={2:[1,4],3:[1,3,5],4:[1,2,4,5],5:[1,2,3,5,6],6:[1,2,3,4,5,6]};
 const acAv=nome=>((rd(AVK)[nome])||[]).filter(e=>!e.x).map(e=>{const r={};for(const k in e.r)if(e.r[k]!=null)r[k]=e.r[k];return{d:e.d,r}});
 function acPayload(nome,o){const d=rd(PLK)[nome],al=ld()[nome];
- if(!d){const cfg=acCfg(),q={v:1,id:acSlug(nome),nome,rev:Date.now(),tr:{n:'Wanderlei',tel:waNum(cfg.tel)},pend:1,mesos:[]};if(o&&o.aval)q.av=acAv(nome);return q}
+ if(!d){const q={v:1,id:acSlug(nome),nome,rev:Date.now(),tr:acTr(),pend:1,mesos:[]};if(o&&o.aval)q.av=acAv(nome);return acExtra(q,nome,al)}
  const p=d.p,H=d.mesos.map(m=>({c:m.c,ss:m.ss.map(s=>({nm:s.nm,ms:s.ms,it:s.it.map(i=>({...i,x:i.x.map(x=>({e:EX.find(e=>e.n===x.n)||{n:x.n,m:[i.m],f:'',t:'I',e:'l',l:0,u:0},s:x.s,...(x.r?{r:x.r}:{})}))}))}))}));
  const asm=p.asm!=='0',mesos=H.map(m=>({f:PH[m.c].n,d:PH[m.c].d,ri:[1,2,3,4].map(w=>String(rir(p,m.c,w))),ds:m.ss.map(s=>({nm:s.nm,wu:wu(s,p),it:s.it.flatMap((it,ii)=>it.x.map((x,j)=>{const g=[mt(s,ii,j),hl(p,m.c,it)].filter(Boolean).join(' · '),r={m:MU[it.m],n:x.e.n,s:[1,2,3,4].map(w=>sx(x.s,j,w)),r:rpx(p,m.c,x,it),d:rest(p,x.e.t)};if(g)r.g=g;if(x.e.e==='h')r.h=1;if(asm&&x.e.u)r.u=1;if(x.e.l)r.l='alongado';if(/^https?:\/\//i.test(x.e.vid||''))r.v=x.e.vid;return r}))}))}));
  const dh=al&&al.dh||{},K={seg:1,ter:2,qua:3,qui:4,sex:5},wd=Object.keys(dh).map(k=>K[k]).filter(Boolean),hr={};Object.keys(dh).forEach(k=>{if(K[k])hr[K[k]]=dh[k]||''});
  const DN=['dom','seg','ter','qua','qui','sex','sáb'],dias=wd.length?wd.map(x=>DN[x]).join(', '):WK[p.dias]||'',w=wcard(p).split('<h3>Aeróbio</h3>'),cfg=acCfg(),
- pay={v:1,id:acSlug(nome),nome,rev:Date.now(),tr:{n:'Wanderlei',tel:waNum(cfg.tel)},ini:p.ini||'',sem:+p.sem||12,dias,wd:wd.length?wd:acWD[p.dias]||[],hr,obj:OBJ[p.obj]||'',niv:NIV[p.niv]||'',tempo:+p.tempo||0,mesos,gen:acTxt(w[0]),aer:acTxt(w[1]||'')};
+ pay={v:1,id:acSlug(nome),nome,rev:Date.now(),tr:acTr(),ini:p.ini||'',sem:+p.sem||12,dias,wd:wd.length?wd:acWD[p.dias]||[],hr,obj:OBJ[p.obj]||'',niv:NIV[p.niv]||'',tempo:+p.tempo||0,mesos,gen:acTxt(w[0]),aer:acTxt(w[1]||'')};
  if(al&&typeof al.lib==='number'){pay.lw=al.lib;const g=al.lib,mi=g>0?Math.min(mesos.length-1,Math.floor((g-1)/4)):-1,w=g>0?(g-1)%4:-1;
   pay.mesos=mesos.map((m,j)=>j!==mi?{f:m.f,d:m.d,ri:['','','',''],ds:[]}:{...m,ri:m.ri.map((r,k)=>k===w?r:''),ds:m.ds.map(d=>({...d,it:d.it.map(x=>({...x,s:x.s.map((v,k)=>k===w?v:0)}))}))})}
  if(o.aval)pay.av=acAv(nome);
  if(o.cargas){const c=lgl()[nome];if(c&&Object.keys(c).length)pay.cg=c}
- return pay}
+ return acExtra(pay,nome,al)}
 async function acBuild(nome,pw,o){const pay=acPayload(nome,o),code=await acEnc(pay,pw),cfg=acCfg(),base=String(cfg.url||'').trim().replace(/#.*$/,'');return{pay,code,link:base?base+'#d='+code:''}}
 let ACN=null;
 function acOpen(n){ACN=n;const cfg=acCfg(),c=acEnsure(n);$('xaU').value=cfg.url||'';$('xaT').value=cfg.tel?waFmt(cfg.tel):'';$('xaP').hidden=false;$('xaN').textContent='Acesso de '+n;$('xaUs').value=c.us;$('xaS').value=c.pw;$('xaR').innerHTML='';$('xaSt').textContent='';$('xaM').textContent=rd(PLK)[n]?'':'Este aluno ainda não tem treino salvo. Ele já pode entrar e verá que o treino está em preparação.';acWa();alList();tab('M');$('xaC0').scrollIntoView({block:'start'});acAuto(n)}
@@ -1265,7 +1273,10 @@ async function acImport(txt){const m=String(txt||'').match(/GP1\.[A-Za-z0-9_-]{2
  const a=ld(),nome=Object.keys(a).find(n=>!a[n].del&&acSlug(n)===o.id);if(!nome)throw new Error('Não achei o aluno deste código ('+String(o.id||'?')+') no cadastro.');
  const c=lgl();c[nome]=c[nome]||{};let nc=0;for(const k in(o.cg||{})){const rows=(o.cg[k]||[]).filter(r=>r&&(r[0]!==''||r[1]!==''));if(rows.length){c[nome][k]=o.cg[k];nc++}}ST.setItem(LK,JSON.stringify(c));
  const q=rd('gt_freq');q[nome]=q[nome]||[];let ns=0;(o.ses||[]).forEach(x=>{const y=q[nome].find(z=>z.id===x.id);if(!y){q[nome].push(x);if(!x.x)ns++}else if((x.u||0)>(y.u||0)){const f0=JSON.stringify(y.fb);Object.assign(y,x);if(JSON.stringify(y.fb)!==f0)delete y.rs}});ST.setItem('gt_freq',JSON.stringify(q));
- return{nome,nc,ns}}
+ let ft=0,an=0;if(typeof o.ft==='string'&&/^data:image\/jpeg;base64,/.test(o.ft)&&o.ft.length<200000){const F=rd('gt_fotos')||{};if(F[nome]!==o.ft){F[nome]=o.ft;ST.setItem('gt_fotos',JSON.stringify(F));ft=1}}
+ if(o.an&&o.an.id&&o.an.a&&typeof o.an.a==='object'){const A=rd('gt_anam');A[nome]=A[nome]||[];const y=A[nome].find(z=>z.id===o.an.id),cl={};for(const k in o.an.a)if(typeof o.an.a[k]==='string'&&o.an.a[k].trim())cl[k]=o.an.a[k].slice(0,1000);
+  if(!y){A[nome].push({id:o.an.id,d:o.an.d||tdy(),a:cl,u:o.an.u||Date.now(),al:1});an=1}else if((o.an.u||0)>(y.u||0)){Object.assign(y,{d:o.an.d||y.d,a:cl,u:o.an.u});an=1}if(an)ST.setItem('gt_anam',JSON.stringify(A))}
+ return{nome,nc,ns,ft,an}}
 $('xaIb').onclick=async()=>{const m=$('xaIm');m.textContent='Importando...';try{const r=await acImport($('xaI').value);m.textContent=r.nome+': '+r.ns+' treino'+(r.ns===1?'':'s')+' novo'+(r.ns===1?'':'s')+' e '+r.nc+' exercício'+(r.nc===1?'':'s')+' com cargas atualizadas.';$('xaI').value='';alList();if(typeof walUpd==='function')walUpd()}catch(e){m.textContent=e.message||'Não foi possível importar.'}};
 function fqTxt(n){const L=(rd('gt_freq')[n]||[]).filter(x=>!x.x);if(!L.length)return'';const u=L.map(x=>x.d).sort().pop(),ds=L.filter(x=>x.d>=ymd(new Date(Date.now()-27*864e5))).length;return'Treinos no app: '+L.length+' ('+ds+' nos últimos 28 dias, último em '+dfmt(u)+')'}
 
@@ -1284,8 +1295,14 @@ function acCred(){const n=ACN,m=$('xaSt');if(!n)return false;const c=acCfg(),us=
  if(c.us[n]!==us||c.pw[n]!==pw){c.us[n]=us;c.pw[n]=pw;c.u=Date.now();ST.setItem('gt_acesso',JSON.stringify(c));m.textContent=SBS?'Acesso salvo.':'Acesso salvo. Publique os treinos para valer.';acAuto(n)}
  else m.textContent='';
  acWa();alList();return true}
+function acRepub(n){if(!SBS||!acList().includes(n))return;clearTimeout(acRepub.t);acRepub.t=setTimeout(()=>acPublish(),1500)}
 function acAuto(n){if(!SBS)return;let st='';try{st=acStatus(n)}catch(e){}if(st==='App: treino publicado'||st==='App: aguardando treino')return;
  clearTimeout(acAuto.t);acAuto.t=setTimeout(async()=>{const m=$('xaSt');m.textContent='Liberando o acesso online...';await acPublish();m.textContent=/^Publicado/.test($('xaPm').textContent)?'Pronto: '+n.split(' ')[0]+' já pode entrar no app com esse usuário e senha.':$('xaPm').textContent},700)}
+function meUi(){const c=acCfg();$('meN').value=c.tn||'';$('meR').value=c.cref||'';$('meFb').innerHTML=c.tf?`<img src="${c.tf}" alt="">`:esc(iniOf(c.tn||'W'))}
+$('meT').onclick=$('meFb').onclick=()=>$('meF').click();
+$('meS').onclick=()=>{const c=rd('gt_acesso');c.tn=$('meN').value.trim()||'Wanderlei';c.cref=$('meR').value.trim();c.u=Date.now();ST.setItem('gt_acesso',JSON.stringify(c));meUi();$('meM').textContent='Perfil salvo.';if(SBS){$('meM').textContent='Perfil salvo. Atualizando o app dos alunos...';acPublish().then(()=>{$('meM').textContent='Perfil salvo e enviado para o app dos alunos.'})}else $('meM').textContent='Perfil salvo. Publique os treinos para os alunos verem.'};
+$('meF').onchange=e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onerror=()=>{$('meM').textContent='Esse arquivo não é uma imagem.'};im.onload=()=>{const cv=document.createElement('canvas'),S=200,m=Math.min(im.width,im.height);cv.width=cv.height=S;cv.getContext('2d').drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,S,S);const c=rd('gt_acesso');c.tf=cv.toDataURL('image/jpeg',.82);c.u=Date.now();ST.setItem('gt_acesso',JSON.stringify(c));meUi();$('meM').textContent='Foto trocada. Toque em Salvar perfil para enviar aos alunos.'};im.src=r.result};r.readAsDataURL(f)};
+try{meUi()}catch(e){}
 let ACM='';
 function acWa(){const n=ACN,c=acCfg();if(!n||!c.us||!c.us[n])return;const nm1=n.trim().split(/\s+/)[0],url=String(c.url||'').trim().replace(/#.*$/,'');
  ACM='Olá, '+nm1+'! Seu app de treino está pronto.\n\nEndereço: '+(url||'(endereço do app)')+'\nUsuário: '+c.us[n]+'\nSenha: '+(c.pw[n]||'')+'\n\nAbra o endereço no celular e entre. Para ter o app como ícone, use "Adicionar à tela inicial" no navegador. Guarde a senha só com você.';
@@ -1327,7 +1344,7 @@ function alPlan(n){const p=ld()[n];if(!p)return;setProf(p);rf();$('sv').value=n;
  if(rd(PLK)[n]){$('bo').onclick()}else{$('msg').textContent=n+' ainda não tem treino. Confira o perfil, clique em Gerar plano e depois em Salvar plano.';$('in').scrollIntoView()}}
 
 /* ---- segurança dos dados: backup, lixeira, voltar no tempo ---- */
-const BKS=['gt_alunos','gt_planos','gt_aval','gt_freq','gt_cargas','gt_acesso','gt_modelo','gt_banco','gt_anam'];
+const BKS=['gt_alunos','gt_planos','gt_aval','gt_freq','gt_cargas','gt_acesso','gt_modelo','gt_banco','gt_anam','gt_fotos'];
 function bkApply(){rf();alList();walUpd();avH();bkUi();const b=rd(BK);DB.ed=b.ed||{};DB.add=b.add||[];DB.del=b.del||[];eff();rb()}
 $('bkD').onclick=async()=>{const m=$('bkM');try{const d={};BKS.forEach(k=>{d[k]=rd(k)});await fsave('backup-gerador-treino-'+tdy()+'.json',new Blob([JSON.stringify({app:'gerador-treino',v:21,t:Date.now(),d})],{type:'application/json'}));m.textContent='Backup baixado. Ele tem dados de saúde e as senhas dos alunos: guarde com cuidado.'}catch(e){m.textContent=e&&e.code==='declined'?'Download cancelado.':'Não foi possível baixar o backup.'}};
 $('bkR').onclick=()=>$('bkF').click();
@@ -1395,6 +1412,7 @@ $('hM').onclick=()=>tab('T');
 $('tH').onclick=()=>tab('H');
 tab('H');
 try{sbUi()}catch(e){}
+try{meUi()}catch(e){}
 try{gate(!window.claude&&!SBS)}catch(e){}
 csInit();
 
