@@ -801,7 +801,7 @@ function edp(p,c,di,ii,j,o,it){const s=ses(di);
  <div class="al"><button class="wk" onclick="mvx(${di},${ii},${j},-1)"${j?'':' disabled'}>Exercício acima</button><button class="wk" onclick="mvx(${di},${ii},${j},1)"${j<it.x.length-1?'':' disabled'}>Exercício abaixo</button><button class="wk" onclick="mvm(${di},${ii},-1)"${ii?'':' disabled'}>Músculo acima</button><button class="wk" onclick="mvm(${di},${ii},1)"${ii<s.it.length-1?'':' disabled'}>Músculo abaixo</button><button class="wk" onclick="trc(${di},${ii},${j})">Trocar</button><button class="wk" onclick="adx(${di},${ii})">Adicionar a ${MU[it.m]}</button><button class="wk" onclick="rmx(${di},${ii},${j})">Remover</button><button class="btn s" onclick="ted()">Fechar</button></div>
  <small class="mu">As séries valem para as semanas 1 e 2. A semana 3 soma 1 série no primeiro exercício e o deload usa metade.</small></div></td></tr>`}
 const plSer=()=>({v:1,t:Date.now(),p:plan.p,scaled:plan.scaled,capped:plan.capped,mesos:plan.mesos.map(m=>({c:m.c,T:m.T,ss:m.ss.map(s=>({nm:s.nm,ms:s.ms,q:s.q,it:s.it.map(i=>({m:i.m,pre:i.pre,act:i.act,u:i.u,h:i.h,bs:i.bs,x:i.x.map(o=>({n:o.e.n,s:o.s,r:o.r||''}))}))}))}))});
-function svp(){try{const a=rd(PLK);a[nmA(plan.p)]=plSer();ST.setItem(PLK,JSON.stringify(a));DIRTY=0;GW=0;PSA=!!((acCfg().us||{})[nmA(plan.p)]);PSM=(CSc?'Plano salvo e sincronizado com a sua conta.':'Plano salvo neste navegador.')+(PSA?' O aluno só vê no app depois de publicar.':'');try{alList()}catch(x){}}catch(e){PSM='Não foi possível salvar o plano.'}keep(()=>{})}
+function svp(){try{const a=rd(PLK);a[nmA(plan.p)]=plSer();ST.setItem(PLK,JSON.stringify(a));DIRTY=0;GW=0;PSA=!!((acCfg().us||{})[nmA(plan.p)]);PSM=(CSc?'Plano salvo e sincronizado com a sua conta.':'Plano salvo neste navegador.')+(PSA?(SBS?' Enviando para o app do aluno...':' O aluno só vê no app depois de publicar.'):'');try{alList()}catch(x){}if(PSA)acRepub(nmA(plan.p),1)}catch(e){PSM='Não foi possível salvar o plano.'}keep(()=>{})}
 $('bo').onclick=()=>{const n=($('sv').value||$('nome').value||'').trim()||'Aluno',d=rd(PLK)[n];if(!d){$('msg').textContent='Não há plano salvo para este aluno. Escolha o aluno em Alunos salvos.';return}
  try{const b=build(d.p);b.p=d.p;b.scaled=d.scaled;b.capped=d.capped;b.mesos=d.mesos.map(m=>({c:m.c,T:m.T,ss:m.ss.map(s=>({nm:s.nm,ms:s.ms,q:s.q,it:s.it.map(i=>({...i,x:i.x.map(o=>({e:EX.find(e=>e.n===o.n)||{n:o.n,m:[i.m],f:'não está mais no banco',t:'I',e:'l',l:0,v:1,r:'',u:0},s:o.s,...(o.r?{r:o.r}:{})}))}))}))}));
   plan=b;setProf(d.p);st={mi:0,w:1};DIRTY=0;DED=null;GW=0;PSM='Plano salvo em '+new Date(d.t).toLocaleDateString('pt-BR')+'.';render();$('out').hidden=false;$('out').scrollIntoView();$('msg').textContent='Plano salvo aberto.'}catch(e){$('msg').textContent='Não foi possível abrir o plano salvo.'}};
@@ -860,7 +860,7 @@ function avSnap(){const p=prof(),o=calc(p),s={},r={};[...AVG.flatMap(g=>g[1].map
  AVR.forEach(([k])=>{let v=null;if(k==='mm')v=o.osso?o.mm:null;else if(['imc','g','mg','mlg','rcq'].includes(k))v=o[k];else v=parseFloat(p[k]);r[k]=v==null||isNaN(v)||v<=0?null:Math.round(v*100)/100});return{s,r}}
 function avSave(){const m=$('avm');if(!$('nome').value.trim()){m.textContent='Informe o nome do aluno para salvar a avaliação.';return}
  const{s,r}=avSnap();if(!Object.values(r).some(v=>v!=null)){m.textContent='Preencha ao menos o peso ou alguma medida.';return}
- const d=$('adata').value||tdy(),a=avl(),n=avN();a[n]=a[n]||[];const ex=AVE&&a[n].find(x=>x.id===AVE);let nid;if(ex){Object.assign(ex,{d,s,r,u:Date.now()});delete ex.x;nid=ex.id}else{nid=d+'|'+Date.now();a[n].push({id:nid,d,s,r,u:Date.now()})}AVE=null;ST.setItem(AVK,JSON.stringify(a));avH();
+ const d=$('adata').value||tdy(),a=avl(),n=avN();a[n]=a[n]||[];const ex=AVE&&a[n].find(x=>x.id===AVE);let nid;if(ex){Object.assign(ex,{d,s,r,u:Date.now()});delete ex.x;nid=ex.id}else{nid=d+'|'+Date.now();a[n].push({id:nid,d,s,r,u:Date.now()})}AVE=null;ST.setItem(AVK,JSON.stringify(a));avH();acRepub(n);
  const msg=ex?'Avaliação de '+d.split('-').reverse().join('/')+' atualizada.':'Avaliação de '+d.split('-').reverse().join('/')+' salva no histórico.';m.textContent=msg;
  if(AVB===n){AVB=null;tab('A');afFicha(n,'a',1);AVO=nid;afRender();$('afm').textContent=msg}}
 function avDel(id){const a=avl(),n=avN(),e=(a[n]||[]).find(x=>x.id===id);if(!e)return;e.x=1;e.u=Date.now();ST.setItem(AVK,JSON.stringify(a));avH()}
@@ -1010,7 +1010,7 @@ const anl=n=>(rd(ANK)[n]||[]).slice().sort((a,b)=>String(b.d).localeCompare(Stri
 function anSave(n){const a=rd(ANK),d=$('anD').value||tdy(),r={};document.querySelectorAll('#aft [data-q]').forEach(e=>{const v=e.value.trim();if(v)r[e.dataset.q]=v});
  if(!Object.keys(r).length){$('afm').textContent='Preencha ao menos uma resposta.';return}
  a[n]=a[n]||[];const ex=ANE!=='new'&&a[n].find(x=>x.id===ANE);let id;if(ex){Object.assign(ex,{d,a:r,u:Date.now()});delete ex.x;id=ex.id}else{id=d+'|'+Date.now();a[n].push({id,d,a:r,u:Date.now()})}
- ST.setItem(ANK,JSON.stringify(a));ANE=null;ANO=id;afRender();$('afm').textContent='Anamnese salva.'}
+ ST.setItem(ANK,JSON.stringify(a));acRepub(n);ANE=null;ANO=id;afRender();$('afm').textContent='Anamnese salva.'}
 function anRm(n,id,on){const a=rd(ANK),e=(a[n]||[]).find(x=>x.id===id);if(!e)return;if(on)e.x=1;else delete e.x;e.u=Date.now();ST.setItem(ANK,JSON.stringify(a))}
 function anTxt(n){return'Olá, '+n.split(' ')[0]+'! Para eu montar seu treino com segurança, responda por favor:\n\n'+ANQ.map(([t,q])=>t+'\n'+q.map(([,l],i)=>(i+1)+'. '+l).join('\n')).join('\n\n')}
 function anTab(n){const all=anl(n),L=all.filter(e=>!e.x),X=all.filter(e=>e.x),s=ld()[n]||{};
@@ -1295,7 +1295,7 @@ function acCred(){const n=ACN,m=$('xaSt');if(!n)return false;const c=acCfg(),us=
  if(c.us[n]!==us||c.pw[n]!==pw){c.us[n]=us;c.pw[n]=pw;c.u=Date.now();ST.setItem('gt_acesso',JSON.stringify(c));m.textContent=SBS?'Acesso salvo.':'Acesso salvo. Publique os treinos para valer.';acAuto(n)}
  else m.textContent='';
  acWa();alList();return true}
-function acRepub(n){if(!SBS||!acList().includes(n))return;clearTimeout(acRepub.t);acRepub.t=setTimeout(()=>acPublish(),1500)}
+function acRepub(n,pl){if(!SBS||!acList().includes(n))return;clearTimeout(acRepub.t);acRepub.t=setTimeout(async()=>{await acPublish();if(pl){const ok=/^Publicado/.test($('xaPm').textContent);PSM=ok?'Plano salvo e já enviado para o app de '+n.split(' ')[0]+'.':'Plano salvo, mas não consegui enviar para o app agora. Use Publicar treinos online.';try{keep(()=>{})}catch(e){}}},1200)}
 function acAuto(n){if(!SBS)return;let st='';try{st=acStatus(n)}catch(e){}if(st==='App: treino publicado'||st==='App: aguardando treino')return;
  clearTimeout(acAuto.t);acAuto.t=setTimeout(async()=>{const m=$('xaSt');m.textContent='Liberando o acesso online...';await acPublish();m.textContent=/^Publicado/.test($('xaPm').textContent)?'Pronto: '+n.split(' ')[0]+' já pode entrar no app com esse usuário e senha.':$('xaPm').textContent},700)}
 function meUi(){const c=acCfg();$('meN').value=c.tn||'';$('meR').value=c.cref||'';$('meFb').innerHTML=c.tf?`<img src="${c.tf}" alt="">`:esc(iniOf(c.tn||'W'))}
