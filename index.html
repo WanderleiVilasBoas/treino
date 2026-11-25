@@ -146,7 +146,7 @@ async function viaFile(us,pw,rawKey){let f=null,fe=null;try{f=await fetchFile();
 async function viaFileOld(us,pw,rawKey){const f=await fetchFile(),k=await lk(us),e=(f.a||[]).find(x=>x.k===k);if(!e)throw new Error('nouser');const r=await openBlob(e.d,pw,rawKey);return{r,str:e.d}}
 function loginView(msg){const pend=LS.g('ga_pend'),blob=LS.g('ga_blob'),user=fUS(),code=!!(pend||(blob&&!user)),hint=LS.g('ga_hint');
  $('nav').hidden=true;
- $('app').innerHTML=`<div class="card login"><h1>${hint?'Olá, '+esc(hint)+'!':'Meu treino'}</h1>
+ $('app').innerHTML=`<div class="card login"><h1>Bem-vindo!</h1>
  <p class="mu">${code?'Digite a senha que seu treinador enviou.':'Entre com o usuário e a senha que seu treinador enviou.'}</p>
  <form id="lf" autocomplete="off">${code?'':`<label>Usuário<input id="lu" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="username" value="${esc(user)}" required></label>`}
  <label${code?'':' style="margin-top:10px"'}>Senha<input id="lp" type="password" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="current-password" required></label>
@@ -173,7 +173,7 @@ async function start(obj,str,raw,user){P=obj;LS.s('ga_blob',str);LS.d('ga_pend')
 async function autoLogin(){const blob=LS.g('ga_blob'),raw=LS.g('ga_key'),pend=LS.g('ga_pend');
  if(pend||!blob||!raw){loginView();return}
  try{const r=await openBlob(blob,null,raw);await start(r.obj,blob,raw,fUS());refresh(true)}catch(e){LS.d('ga_key');loginView()}}
-function logout(){if(TI)clearInterval(TI);LS.d('ga_key');P=null;S=null;loginView()}
+function logout(){if(TI)clearInterval(TI);['ga_key','ga_user','ga_blob','ga_pend','ga_hint'].forEach(k=>LS.d(k));P=null;S=null;loginView()}
 let LR=0;
 async function refresh(force){const us=fUS(),raw=LS.g('ga_key');if(!us||!raw||!P||!S||S.act)return;if(!force&&Date.now()-LR<120000)return;LR=Date.now();
  try{const x=await viaFile(us,null,raw),nu=x.r.obj;if(nu.rev===P.rev&&!!nu.pend===!!P.pend){if(nu.tk&&nu.tk!==P.tk){P.tk=nu.tk;LS.s('ga_blob',x.str);autoEnv(500)}return}if(S.act)return;
