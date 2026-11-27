@@ -3,6 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest-treinador.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-adm.png">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<meta name="apple-mobile-web-app-title" content="Treinador">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Gerador de treino periodizado</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600&family=Montserrat:wght@600;700&display=swap">
 <style>
@@ -1465,6 +1471,8 @@ $('bif').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)re
  if(d.cargas&&typeof d.cargas==='object'){const c=lgl();for(const n in d.cargas)c[n]=Object.assign(c[n]||{},d.cargas[n]);ST.setItem(LK,JSON.stringify(c))}
  if(d.banco&&typeof d.banco==='object'){const b=Object.assign({ed:{},add:[],del:[]},DB);Object.assign(b.ed,d.banco.ed||{});(d.banco.add||[]).forEach(x=>{if(!b.add.some(y=>y.n===x.n))b.add.push(x)});b.del=[...new Set([...(b.del||[]),...(d.banco.del||[])])];ST.setItem(BK,JSON.stringify(b))}
  location.reload()}catch(err){$('msg').textContent='Arquivo inválido. Use um arquivo exportado por este app.'}};
+
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')&&!window.claude)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>
 </html>

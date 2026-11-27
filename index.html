@@ -8,6 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#560725">
 <meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-title" content="Meu Treino">
+<link rel="manifest" href="manifest-aluno.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/favicon.png">
 <title>Meu Treino</title>
 <style>
 :root{--bg:#efefef;--cd:#fff;--fg:#231a1e;--mu:#6b6268;--bd:#ddd6d9;--ac:#560726;--on:#fff;--sf:#f3eef0;--ok:#1f7a45;--ng:#a3262a;--yl:#ffd72f;color-scheme:light}
@@ -94,6 +98,7 @@ a.vx{display:inline-flex;align-items:center;min-height:44px}
 details.dd{border-top:1px solid var(--bd);padding:6px 0}details.dd summary{display:flex;justify-content:space-between;gap:8px;align-items:center}details.dd .it{display:flex;justify-content:space-between;gap:8px;padding:5px 0;font-size:14px}
 hr{border:0;border-top:1px solid var(--bd);margin:12px 0}
 details summary{cursor:pointer;font-weight:600;min-height:32px}
+.inst img{border-radius:12px;flex:none}.inst .x{min-width:44px;min-height:44px;padding:0;background:transparent;color:var(--mu);font-size:24px;border:0}.inst .ih{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--sf);font-size:14px;line-height:1.45}
 </style>
 </head>
 <body>
@@ -237,7 +242,7 @@ function vNaoLib(){return homeHead()+`<div class="card" style="text-align:center
 function vTreino(){if(P.pend)return vPend();if(S.act&&!S.act.fin&&!(P.mesos[S.act.mi]&&P.mesos[S.act.mi].ds[S.act.di])){S.act=null;save()}if(S.act&&S.act.fin)return vFim();if(S.act)return vSessao();if(naoLib())return vNaoLib();
  const g=semAtual(),{mi,w}=pos(g),me=P.mesos[mi],novos=sesOk().filter(x=>x.u>(S.sent||0)).length;
  const feitos=di=>sesOk().find(x=>x.mi===mi&&x.w===w&&x.di===di),n=me.ds.length,fd=me.ds.filter((_,i)=>feitos(i)).length,nx=me.ds.findIndex((_,i)=>!feitos(i)),ni=nx<0?0:nx,d=me.ds[ni];
- return homeHead()+`
+ return homeHead()+(S.instX?'':instCard(1))+`
  <div class="card hero"><small>${nx<0?'Semana completa! Quer treinar de novo?':'Próximo treino'}</small><h2 style="margin:2px 0">Dia ${ni+1}: ${esc(d.nm)}</h2><small>${d.it.length} exercícios${P.tempo?' · cerca de '+P.tempo+' min':''}</small>
  <div class="row m"><button data-a="ini" data-d="${ni}" style="flex:1">${nx<0?'Treinar de novo':'Começar treino'}</button></div></div>
  ${quick()}
@@ -417,6 +422,11 @@ function vAvalF(){const L=(P.av||[]).slice().sort((a,b)=>a.d.localeCompare(b.d))
 `}
 
 /* ---------- perfil ---------- */
+/* ---------- instalar no celular ---------- */
+let BIP=null,INSH=0;const isStd=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}},isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();BIP=e});addEventListener('appinstalled',()=>{BIP=null;try{toast('App instalado! Procure o ícone "Meu Treino" no celular.')}catch(e){}});
+const instTxt=()=>isIOS()?'No Safari, toque no botão <b>Compartilhar</b> (o quadrado com a seta para cima) e depois em <b>Adicionar à Tela de Início</b>. Se não aparecer, role a lista de opções para baixo.':'No Chrome, toque no menu <b>⋮</b> (três pontinhos no canto de cima) e depois em <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.';
+const instCard=(ban)=>isStd()?'':`<div class="card inst"><div class="row sp" style="align-items:center;flex-wrap:nowrap"><img src="icons/icon-192.png" alt="" width="44" height="44"><div style="flex:1;min-width:0"><b>Instale o app no celular</b><br><small class="mu">Ícone na tela inicial, abre em tela cheia e funciona sem internet.</small></div>${ban?'<button class="x" data-a="instx" aria-label="Fechar aviso">×</button>':''}</div><div class="row m"><button data-a="inst" type="button">Instalar</button></div>${INSH?`<p class="ih" role="status">${instTxt()}</p>`:''}</div>`;
 function vMais(){const novos=sesOk().filter(x=>x.u>(S.sent||0)).length,tel=P.tr&&P.tr.tel?String(P.tr.tel).replace(/\D/g,''):'';
  return`<h1>Perfil</h1><div class="card" style="text-align:center">${avH(S.ft||P.ft,P.nome,'xl')}<input type="file" id="ffi" accept="image/*" hidden><div class="row m" style="justify-content:center;margin-top:8px"><button class="s" data-a="foto" type="button">${S.ft||P.ft?'Trocar foto':'Colocar foto'}</button></div></div>
  <div class="card">${trCard()}<div class="qk" style="margin-bottom:0"><button data-go="fin" type="button"><i><svg viewBox="0 0 24 24" aria-hidden="true">${IQ.fin}</svg></i>Mensalidade</button><button data-a="goan" type="button"><i><svg viewBox="0 0 24 24" aria-hidden="true">${IQ.an}</svg></i>Anamnese</button></div></div>
@@ -424,7 +434,7 @@ function vMais(){const novos=sesOk().filter(x=>x.u>(S.sent||0)).length,tel=P.tr&
  ${tel?`<div class="row m"><a class="btn s" href="https://wa.me/${tel}" target="_blank" rel="noopener noreferrer">Falar com ${esc(P.tr.n?String(P.tr.n).split(' ')[0]:'o treinador')}</a></div>`:''}</div>
  ${P.pend?'':`<div class="card"><div class="row sp"><div><b>Enviar progresso</b><br><small class="mu">${novos?novos+' treino'+(novos>1?'s':'')+' novo'+(novos>1?'s':'')+' desde o último envio':'Nenhum treino novo desde o último envio'}</small></div><button data-a="enviar">Enviar</button></div></div>
  ${(P.gen&&P.gen.length)||(P.aer&&P.aer.length)||(P.reg&&P.reg.length)?`<details class="card"><summary>Aquecimento e aeróbio</summary>${(P.gen&&P.gen.length?'<h3>Aquecimento</h3><ul>'+P.gen.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>':'')}${(P.aer&&P.aer.length?'<h3>Aeróbio</h3><ul>'+P.aer.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>':'')}${P.reg&&P.reg.length?'<h3>Regras do plano</h3><ul>'+P.reg.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>':''}</details>`:''}`}
- <div class="card"><div class="row"><button class="s" data-a="tema">Tema: ${S.tema==='dark'?'escuro':S.tema==='light'?'claro':'automático'}</button><button class="s" data-a="sair">Sair deste aparelho</button></div>${P.pend?'':`<details style="margin-top:10px"><summary>Reiniciar plano</summary><p><small class="mu">A semana 1 passa a contar a partir de hoje. Seu histórico de treinos e cargas é mantido.</small></p><button class="s" data-a="reinicia">Reiniciar plano</button></details>`}</div>`}
+ ${instCard(0)}<div class="card"><div class="row"><button class="s" data-a="tema">Tema: ${S.tema==='dark'?'escuro':S.tema==='light'?'claro':'automático'}</button><button class="s" data-a="sair">Sair deste aparelho</button></div>${P.pend?'':`<details style="margin-top:10px"><summary>Reiniciar plano</summary><p><small class="mu">A semana 1 passa a contar a partir de hoje. Seu histórico de treinos e cargas é mantido.</small></p><button class="s" data-a="reinicia">Reiniciar plano</button></details>`}</div>`}
 
 /* ---------- eventos ---------- */
 var FBT;
@@ -456,7 +466,9 @@ const aa=b.dataset.a;if(aa==='mdp'){const v=b.querySelector('video'),p=b.querySe
  else if(a==='pv'){PV=b.dataset.v;SEL=null;draw()}
 
  else if(a==='atualizar'){toast('Verificando...');await refresh(true)}
- else if(a==='sair')logout()});
+ else if(a==='sair')logout();
+ else if(a==='inst'){if(BIP){const e=BIP;BIP=null;e.prompt();(e.userChoice||Promise.resolve()).then(c=>{if(c&&c.outcome!=='accepted'){INSH=1;draw()}})}else{INSH=1;draw()}}
+ else if(a==='instx'){S.instX=1;save();draw()}});
 document.addEventListener('input',e=>{const t=e.target;if(!P||!S||!S.act||t.dataset.f===undefined)return;setCg(+t.dataset.i,+t.dataset.k,+t.dataset.f,t.value);topUpd()});
 document.addEventListener('change',e=>{const t=e.target;if(!P)return;if(t.id==='fdur'&&S.act&&S.act.res){const v=Math.max(1,Math.min(300,parseInt(t.value,10)||0));const x=S.ses.find(z=>z.id===S.act.res.sid);if(x&&v){x.dur=v;x.u=Date.now();S.act.res.dur=v;save();autoEnv(1500);const kb=document.querySelector('.k4 b');if(kb)kb.textContent=v+' min';toast('Duração corrigida')}return}if(t.id==='ffi'){const f=t.files&&t.files[0];t.value='';if(f)fotoSet(f);return}if(t.id==='exs'){EXSEL=t.value;evoDraw()}else if(t.id==='ava'){AVA=t.value;draw()}else if(t.id==='avb'){AVB=t.value;draw()}else if(t.id==='avm'){AVM=t.value;draw()}});
 
@@ -466,6 +478,7 @@ document.addEventListener('change',e=>{const t=e.target;if(!P)return;if(t.id==='
  const hv=()=>{const h=location.hash||'';let c=findCode(h);if(!c){try{c=findCode(decodeURIComponent(h))}catch(e){}}if(c){LS.s('ga_pend',c);try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}return!!c};
  hv();window.addEventListener('hashchange',()=>{if(hv())logout()});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refresh()});
  await autoLogin()})();
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')&&!window.claude)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>
 </html>
