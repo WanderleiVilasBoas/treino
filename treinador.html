@@ -80,6 +80,7 @@ details.dt{margin-top:14px;border-top:1px solid var(--bd);padding-top:10px}summa
 .kv.kvq{grid-template-columns:1fr;gap:2px}.kv.kvq dd{margin:0 0 10px;font-weight:600}
 .fh{display:flex;gap:12px;align-items:center}.fh .av{width:60px;height:60px;font-size:20px}.av img{width:100%;height:100%;object-fit:cover;display:block}.wn{background:var(--sf);border:1px solid var(--ac);border-radius:10px;padding:10px 12px;margin:10px 0}.wn p{margin:0 0 8px}
 .ft{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.ft button{white-space:nowrap}
+.vgt{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}.vgt th{text-align:left;font-size:12px;color:var(--mu);font-weight:600;padding:4px 6px}.vgt td{padding:5px 6px;border-top:1px solid var(--bd)}.vgt td:nth-child(2){position:relative;font-weight:700}.vb{display:inline-block;height:8px;width:calc(var(--w) * .6);min-width:2px;border-radius:4px;background:var(--ac);margin-right:6px;vertical-align:middle}.vhs{border-top:1px solid var(--bd);padding:4px 0}.vhs summary{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;cursor:pointer}.vhs ul{margin:4px 0 8px;padding-left:18px;font-size:14px}
 .kv{display:grid;grid-template-columns:minmax(100px,max-content) 1fr;gap:6px 14px;margin:0}.kv dt{color:var(--mu);font-size:13px}.kv dd{margin:0;word-break:break-word}
 @media print{.tabs,.bn,#pA,#pM{display:none}#in,#bk,.mac,.chips.w2,.nop{display:none}.card{break-inside:avoid}}
 </style>
@@ -1046,7 +1047,21 @@ function anTab(n){const all=anl(n),L=all.filter(e=>!e.x),X=all.filter(e=>e.x),s=
   :`<p class="mu">${ANX?'Nenhuma anamnese excluída.':'Nenhuma anamnese ainda. Toque em + Nova anamnese, ou mande as perguntas para o aluno responder no WhatsApp.'}</p>`;
  return h}
 let PGX=0;
-function pgTab(n){const{ex,wk}=gxData(n),names=Object.keys(ex).sort((a,b)=>ex[b].length-ex[a].length||a.localeCompare(b)),sg=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(0)+'%',G='<div class="g" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">';let h='<h3 style="margin-top:0">Cargas</h3>';
+/* ---- volume de treino (vindo do app do aluno) ---- */
+const MGO=['Peitoral','Costas','Ombros','Bíceps','Tríceps','Abdômen','Quadríceps','Posteriores','Glúteos','Panturrilhas'],kgF=v=>Math.round(v||0).toLocaleString('pt-BR')+' kg';
+const wkS=d=>{const x=new Date(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8,10));x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)},wkAdd=(d,n)=>{const x=new Date(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8,10)+n);return ymd(x)};
+function vlTab(n){const L=(rd('gt_freq')[n]||[]).filter(x=>x&&!x.x&&!x.man&&x.d);let h='<h3 style="margin-top:0">Volume de treino</h3>';
+ if(!L.length)return h+'<p class="mu" style="margin-top:0">Aparece quando o aluno conclui treinos no app: volume (carga × repetições), séries por grupo muscular e o histórico de cada treino.</p>';
+ const hj=wkS(ymd(new Date())),ks=[];for(let i=7;i>=0;i--)ks.push(wkAdd(hj,-7*i));const W={};ks.forEach(k=>W[k]={v:0,s:0,n:0,mg:{}});
+ L.forEach(x=>{const w=W[wkS(x.d)];if(!w)return;w.v+=x.vl||0;w.s+=x.sr||0;w.n++;for(const m in(x.mg||{}))w.mg[m]=(w.mg[m]||0)+x.mg[m]});
+ const a=W[hj],b=W[wkAdd(hj,-7)],dv=b.v?(a.v-b.v)/b.v*100:null,fd=k=>k.slice(8,10)+'/'+k.slice(5,7);
+ h+=`<dl class="kv" style="margin:0 0 10px"><dt>Esta semana</dt><dd>${kgF(a.v)} · ${a.n} treino${a.n===1?'':'s'} · ${a.s} séries</dd><dt>Semana passada</dt><dd>${kgF(b.v)} · ${b.n} treino${b.n===1?'':'s'} · ${b.s} séries</dd><dt>Variação</dt><dd>${dv==null?'-':(dv>=0?'▲ +':'▼ −')+Math.abs(dv).toFixed(0)+'%'}</dd></dl>`;
+ const G=MGO.filter(m=>a.mg[m]||b.mg[m]).concat([...new Set([...Object.keys(a.mg),...Object.keys(b.mg)])].filter(m=>!MGO.includes(m))),mx=Math.max(1,...G.map(m=>Math.max(a.mg[m]||0,b.mg[m]||0)));
+ h+=`<div class="g" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">${chart('Volume por semana (segunda a domingo)',ks.map(k=>({l:fd(k),v:W[k].v})),'kg')}<div style="min-width:0"><b style="font-size:13px">Séries por grupo muscular</b>${G.length?`<table class="vgt"><thead><tr><th>Grupo</th><th>Esta semana</th><th>Passada</th></tr></thead><tbody>${G.map(m=>`<tr><td>${esc(m)}</td><td><span class="vb" style="--w:${Math.round((a.mg[m]||0)/mx*100)}%"></span>${a.mg[m]||0}</td><td class="mu">${b.mg[m]||0}</td></tr>`).join('')}</tbody></table>`:'<p class="mu">Os grupos musculares aparecem nos treinos concluídos com a versão nova do app do aluno.</p>'}</div></div>`;
+ const H=L.slice().sort((x,y)=>String(y.d).localeCompare(String(x.d))||(y.u||0)-(x.u||0)).slice(0,10);
+ h+=`<h3>Últimos treinos</h3>`+H.map(x=>{const ex=x.ex||[];return`<details class="vhs"><summary><span><b>${esc(fbDay(n,x)||'Treino')}</b><br><small class="mu">${esc(dfmt(x.d))}${x.dur?' · '+x.dur+' min':''}${x.sr?' · '+x.sr+' séries':''}</small></span><b>${x.vl?kgF(x.vl):'-'}</b></summary>${ex.length?`<ul>${ex.map(e=>`<li>${e[1]}x ${esc(e[0])}${e[2]?' · '+kgF(e[2]):''}</li>`).join('')}</ul>`:'<p class="mu" style="margin:4px 0"><small>Sem detalhe por exercício (treino feito antes desta versão do app).</small></p>'}</details>`}).join('');
+ return h}
+function pgTab(n){const{ex,wk}=gxData(n),names=Object.keys(ex).sort((a,b)=>ex[b].length-ex[a].length||a.localeCompare(b)),sg=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(0)+'%',G='<div class="g" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">';let h=vlTab(n)+'<h3>Cargas</h3>';
  if(!names.length)h+='<p class="mu" style="margin-top:0">Ainda não há cargas registradas. Elas chegam quando o aluno envia o progresso, ou quando você registra pelo botão Cargas de cada exercício.</p>';
  else{if(PGX>=names.length)PGX=0;
   const ev=names.map(nm=>{const a=ex[nm].slice().sort((x,y)=>x.sc-y.sc);return{nm,k:a.length,i:a[0].e1,f:a[a.length-1].e1}}).filter(x=>x.k>=2&&x.i>0).map(x=>({...x,p:(x.f/x.i-1)*100})).sort((x,y)=>y.p-x.p).slice(0,5);
@@ -1068,7 +1083,7 @@ function afOpen(n){alForm(n);$('amg').textContent='';afShow('f');scrollTo(0,0);i
 function afBack(){const a=ld();if(FI&&a[FI]&&!a[FI].del)afFicha(FI,FT);else afList()}
 function afFicha(n,t,keep){FI=n;FT=t||'r';if(!keep){CM=null;FD=null;FYV=false;AVO=null;AVC=null;AVX=false;ANO=null;ANE=null;ANX=false}afShow('p');afRender();scrollTo(0,0)}
 function fbAll(){const q=rd('gt_freq'),o=[];for(const n in q)(q[n]||[]).forEach(x=>{if(x&&!x.x&&((x.fb&&(x.fb.i||x.fb.c))||(!x.man&&x.dur>0)))o.push(Object.assign({n},x))});return o}
-const fbT=x=>{const f=x.fb||{},dy=fbDay(x.n,x);return[(FBL[f.i]||(f.c?'Comentário':'Treino concluído'))+(dy?' · '+dy:''),dfmt(x.d)+(x.dur?' · '+x.dur+' min':'')+(x.sr?' · '+x.sr+' séries':'')+(f.c?' · “'+String(f.c).slice(0,100)+'”':'')]};
+const fbT=x=>{const f=x.fb||{},dy=fbDay(x.n,x);return[(FBL[f.i]||(f.c?'Comentário':'Treino concluído'))+(dy?' · '+dy:''),dfmt(x.d)+(x.dur?' · '+x.dur+' min':'')+(x.sr?' · '+x.sr+' séries':'')+(x.vl?' · '+Math.round(x.vl).toLocaleString('pt-BR')+' kg':'')+(f.c?' · “'+String(f.c).slice(0,100)+'”':'')]};
 const MES3=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 function pgDue(s){const dv=parseInt(s.ven,10)||(s.ci?+s.ci.slice(8,10):0);if(!(dv>=1&&dv<=31))return[];
  const hj=new Date();hj.setHours(0,0,0,0);const ci=s.ci?new Date(+s.ci.slice(0,4),+s.ci.slice(5,7)-1,+s.ci.slice(8,10)):null,cf=s.cf?new Date(+s.cf.slice(0,4),+s.cf.slice(5,7)-1,1):null,o=[];
